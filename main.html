@@ -3,20 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forensische ICT Opdracht</title>
+  <!-- Titel wordt dynamisch ingesteld -->
+  <title></title>
   <style>
     /* Globale box-sizing regel */
     *, *::before, *::after {
       box-sizing: border-box;
     }
+    /* Basisstijl (licht thema) */
+    body {
+      background-color: #f0f0f0;
+      color: #333;
+      font-family: Arial, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+      padding: 20px;
+    }
+    /* Dark mode stijlen */
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
     #main-container {
       margin-left: 20px;
-      width: 80%;
+      margin-right: 20px;
+      width: 99%;
     }
-    /* Header: titel, moeilijkheidslabel en opdrachtomschrijving */
+    /* Header: titel, moeilijkheidslabel, opdrachtomschrijving en darkmode toggle */
     #header-container {
-      text-align: left;
+      display: flex;
+      align-items: center;
       margin-bottom: 20px;
+      width: 100%;
+    }
+    /* Headertekst links: neemt alle beschikbare ruimte in */
+    #header-text {
+      flex: 1;
+      text-align: left;
     }
     #header-container h1 {
       margin: 0;
@@ -36,7 +58,7 @@
     #assignment-description {
       margin-top: 10px;
     }
-    /* Container voor de toggle-knop */
+    /* Container voor de toggle-knop (terminal) */
     #button-container {
       text-align: left;
       margin-bottom: 10px;
@@ -54,24 +76,39 @@
       width: 100%;
       display: flex;
       align-items: center;
+      transition: background-color 0.3s, border 0.3s;
     }
-    /* Icon-knoppen in de toolbar */
+    /* Extra dark mode styling voor de toolbar */
+    body.dark-mode #toolbar {
+      background-color: #1e1e1e; /* Minder donker dan de body (#121212) */
+      border-color: #333;
+    }
+    /* Zorg dat de SVG's in de toolbar in dark mode van kleur veranderen */
+    body.dark-mode #toolbar svg,
+    body.dark-mode #toolbar button.icon svg {
+      fill: #e0e0e0 !important;
+    }
+    /* Extra specifieke regel voor SVG path elementen (om inline styles te overschrijven) */
+    body.dark-mode #toolbar svg path {
+      fill: #e0e0e0 !important;
+    }
+    /* Toolbar icon-knoppen */
     #toolbar button.icon {
       display: flex;
       align-items: center;
+      justify-content: center;
       margin: 0 10px;
       padding: 0;
       background: none;
       border: none;
       cursor: pointer;
       height: 40px;
-      justify-content: center;
     }
     #toolbar button.icon svg {
       display: block;
       margin: auto;
     }
-    /* Terminal (console) styling */
+    /* Terminal styling (blijft onveranderd) */
     #terminal {
       width: 100%;
       height: 200px;
@@ -80,24 +117,46 @@
       padding: 10px;
       border-radius: 5px;
       overflow-y: auto;
-      display: none;
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
+      display: none;
+      margin-top: 20px;
     }
-    /* Globale styling voor knoppen */
-    button {
-      font-size: 1em;
-      cursor: pointer;
-    }
+    /* Standaard knoppen */
     button.normal {
       background-color: #007bff;
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 5px;
       margin: 10px 0;
       padding: 10px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
     }
-    /* Container voor de inleverknop */
+    /* Knoppen in dark mode */
+    body.dark-mode button.normal {
+      background-color: #555;
+    }
+    /* Darkmode toggle knop: zonder achtergrond */
+    #darkModeToggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      transition: fill 0.3s;
+    }
+    /* SVG in de darkmode knop: standaard kleur */
+    #darkModeToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: #007bff;
+      transition: fill 0.3s;
+    }
+    /* SVG in dark mode */
+    body.dark-mode #darkModeToggle svg {
+      fill: #e0e0e0;
+    }
+    /* Inleverknop container */
     #submit-container {
       text-align: left;
       margin-top: 10px;
@@ -117,19 +176,43 @@
     #inputModal input {
       width: 80%;
     }
+    /* In dark mode voor de modal, een lichtere achtergrond */
+    body.dark-mode #inputModal {
+      background: #333;
+      color: #e0e0e0;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
 <body>
   <div id="main-container">
-    <!-- Header met titel, moeilijkheidsniveau en opdrachtomschrijving -->
+    <!-- Header met titel, moeilijkheidsniveau, opdrachtomschrijving en darkmode toggle -->
     <div id="header-container">
-      <h1 id="page-title">Forensische ICT Opdracht</h1>
-      <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
-      <p id="assignment-description">Los de volgende programmeeropdracht op met de gegeven terminal.</p>
+      <div id="header-text">
+        <h1 id="page-title"></h1>
+        <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
+        <p id="assignment-description"></p>
+      </div>
+      <!-- Darkmode toggle knop -->
+      <button id="darkModeToggle" title="Toggle Dark Mode">
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <title>dark-mode-solid</title>
+          <g id="Layer_2" data-name="Layer 2">
+            <g id="Icons">
+              <g>
+                <rect width="48" height="48" fill="none"/>
+                <g>
+                  <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
+                  <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </button>
     </div>
     
-    <!-- Toggle knop -->
+    <!-- Toggle knop voor de terminal -->
     <div id="button-container">
       <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Toon/Verberg Terminal</button>
     </div>
@@ -176,6 +259,7 @@
     </div>
   </div>
   
+  <!-- Input Modal -->
   <div id="inputModal">
     <p>Voer een waarde in:</p>
     <input type="text" id="userInput">
@@ -186,12 +270,10 @@
     // Variabelen met de titel en opdrachtbeschrijving
     const pageTitle = "Forensische ICT Opdracht";
     const opdrachtBeschrijving = "Los de volgende programmeeropdracht op met de gegeven terminal.";
-
-    // Stel de titel in (zowel in het <title>-element als in de header)
     document.title = pageTitle;
     document.getElementById("page-title").innerText = pageTitle;
     document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
-
+    
     const applicatie_naam = "Opdracht1";
     const pythonCode = `
         x = int(input('test '))
@@ -207,6 +289,7 @@
     const runButton = document.getElementById("runButton");
     const clearButton = document.getElementById("clearButton");
     const toolbar = document.getElementById("toolbar");
+    const darkModeToggle = document.getElementById("darkModeToggle");
   
     function preprocess_code(code) {
       return code.replace('input(', 'await input(');
@@ -243,7 +326,7 @@
       return new Promise((resolve) => {
         inputModal.style.display = "block";
         inputResolver = resolve;
-        // Zorg dat het invoerveld direct de focus krijgt
+        // Focus op invoerveld
         userInput.focus();
       });
     }
@@ -256,7 +339,7 @@
       inputResolver(inputValue);
     }
   
-    // Voeg een eventlistener toe aan het invoerveld om op Enter te reageren
+    // Zorg dat bij Enter op het invoerveld submitInput() wordt aangeroepen
     userInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         submitInput();
@@ -265,7 +348,6 @@
   
     function toggleTerminal() {
       const isVisible = window.getComputedStyle(terminal).display !== "none";
-  
       if (isVisible) {
         terminal.style.display = "none";
         toolbar.style.display = "none";
@@ -282,6 +364,11 @@
     function submitAssignment() {
       window.open("https://voorbeeldwebsite.com/leverin", "_blank");
     }
+  
+    // Dark mode toggle: schakel dark-mode class op body
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
   
     window.onload = () => loadPyodideAndSetup();
   </script>
