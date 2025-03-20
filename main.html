@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forensische ICT Opdracht</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    /* Header: links uitgelijnd */
+    #header-container {
+      text-align: left;
+      margin-left: 20px;
+      margin-bottom: 20px;
+    }
+    #header-container h1 {
+      margin: 0;
+      padding: 0;
+    }
+    #difficulty {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: white;
+      background-color: #007bff;
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    #assignment-description {
+      margin-top: 10px;
+    }
+    /* Toggle-knop container */
+    #button-container {
+      text-align: left;
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+    /* Terminal-container met vaste breedte en linker marge zodat alles netjes onder elkaar komt */
+    #terminal-container {
+      margin-left: 20px;
+      width: 80%;
+    }
+    /* Toolbar met minder padding zodat deze minder dik is */
+    #toolbar {
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      padding: 1px;  /* Minder padding zorgt voor een minder dikke balk */
+      margin-bottom: 3px;
+      width: 100%;
+    }
+    /* Zorg dat de SVG-knoppen in de toolbar links staan en wat marge rechts hebben */
+    #toolbar button {
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    /* Terminal (console) styling */
+    #terminal {
+      width: 100%;
+      height: 200px;
+      background: #121212;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: left;
+      overflow-y: auto;
+      display: none;
+      white-space: pre-wrap;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    /* Globale styling voor knoppen */
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    button.normal {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button.icon {
+      background: none;
+      border: none;
+    }
+    /* Submit-knop container links uitgelijnd */
+    #submit-container {
+      text-align: left;
+      margin-left: 20px;
+    }
+    #inputModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    #inputModal input {
+      width: 80%;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+</head>
+<body>
+  <!-- Header met titel, moeilijkheidsniveau en opdrachtomschrijving -->
+  <div id="header-container">
+    <h1>Forensische ICT Opdracht</h1>
+    <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
+    <p id="assignment-description">Los de volgende programmeeropdracht op met de gegeven terminal.</p>
+  </div>
+  
+  <!-- Toggle knop bovenaan -->
+  <div id="button-container">
+    <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Toon/Verberg Terminal</button>
+  </div>
+  
+  <!-- Terminal container met toolbar en console -->
+  <div id="terminal-container">
+    <!-- Toolbar met de twee SVG-knoppen -->
+    <div id="toolbar">
+      <button id="runButton" class="icon" style="display: none;" onclick="runPythonCode()" title="Voer code uit">
+        <svg height="24" width="24" version="1.1" xmlns="http://www.w3.org/2000/svg" 
+             xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
+          <style type="text/css">
+            .st0 { fill: #000000; }
+          </style>
+          <g>
+            <path class="st0" d="M256,0C114.625,0,0,114.625,0,256c0,141.374,114.625,256,256,256
+              c141.374,0,256-114.626,256-256C512,114.625,397.374,0,256,0z M351.062,258.898l-144,85.945
+              c-1.031,0.626-2.344,0.657-3.406,0.031c-1.031-0.594-1.687-1.702-1.687-2.937v-85.946v-85.946
+              c0-1.218,0.656-2.343,1.687-2.938c1.062-0.609,2.375-0.578,3.406,0.031l144,85.962
+              c1.031,0.586,1.641,1.718,1.641,2.89C352.703,257.187,352.094,258.297,351.062,258.898z"/>
+          </g>
+        </svg>
+      </button>
+      <button id="clearButton" class="icon" style="display: none;" onclick="clearTerminal()" title="Maak de terminal leeg">
+        <svg width="24" height="24" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" fill-rule="evenodd" stroke="#000000" stroke-linecap="round" stroke-linejoin="round"
+             transform="matrix(0 1 1 0 2.5 2.5)">
+            <path d="m13 11 3 3v-6c0-3.36502327-2.0776-6.24479706-5.0200433-7.42656457
+              -.9209869-.36989409-1.92670197-.57343543-2.9799567-.57343543
+              -4.418278 0-8 3.581722-8 8s3.581722 8 8 8c1.48966767 0 3.4724708-.3698516 5.0913668-1.5380762"/>
+            <path d="m5 5 6 6"/>
+            <path d="m11 5-6 6"/>
+          </g>
+        </svg>
+      </button>
+    </div>
+    <!-- Console window -->
+    <div id="terminal"></div>
+  </div>
+  
+  <!-- Inleveren knop -->
+  <div id="submit-container">
+    <button class="normal" onclick="submitAssignment()" title="Lever je opdracht in">Lever in</button>
+  </div>
+  
+  <div id="inputModal">
+    <p>Voer een waarde in:</p>
+    <input type="text" id="userInput">
+    <button onclick="submitInput()">OK</button>
+  </div>
+  
+  <script>
+    const applicatie_naam = "Opdracht1";
+    const pythonCode = `
+        x = int(input('test '))
+        for i in range(x):
+            print(i)
+        `;
+    let inputResolver;
+    let pyodide;
+  
+    const terminal = document.getElementById("terminal");
+    const inputModal = document.getElementById("inputModal");
+    const userInput = document.getElementById("userInput");
+    const runButton = document.getElementById("runButton");
+    const clearButton = document.getElementById("clearButton");
+  
+    function preprocess_code(code) {
+      return code.replace('input(', 'await input(');
+    }
+  
+    function clearTerminal() {
+      terminal.innerHTML = "";
+    }
+  
+    async function loadPyodideAndSetup() {
+      pyodide = await loadPyodide();
+      terminal.innerHTML += `C:/${applicatie_naam}/main.py\n`;
+      pyodide.globals.set('input', s => getInputFromUser(s));
+      pyodide.globals.set('print', s => {
+        terminal.innerHTML += `${s}\n`;
+      });
+    }
+  
+    async function runPythonCode() {
+      terminal.innerHTML += `python C:/${applicatie_naam}/main.py\n`;
+      if (!pyodide) {
+        terminal.innerHTML += ` ${applicatie_naam} is nog niet geladen...\n`;
+        return;
+      }
+      try {
+        await pyodide.runPythonAsync(preprocess_code(pythonCode));
+      } catch (error) {
+        terminal.innerHTML += "Fout: " + error + "\n";
+      }
+    }
+  
+    function getInputFromUser(dat) {
+      terminal.innerHTML += `> ${dat}`;
+      return new Promise((resolve) => {
+        inputModal.style.display = "block";
+        inputResolver = resolve;
+      });
+    }
+  
+    function submitInput() {
+      inputModal.style.display = "none";
+      let inputValue = userInput.value;
+      terminal.innerHTML += `<i>${inputValue}\n</i>`;
+      userInput.value = "";
+      inputResolver(inputValue);
+    }
+  
+    function toggleTerminal() {
+      const isVisible = terminal.style.display === "block";
+      terminal.style.display = isVisible ? "none" : "block";
+      runButton.style.display = isVisible ? "none" : "inline-block";
+      clearButton.style.display = isVisible ? "none" : "inline-block";
+    }
+  
+    function submitAssignment() {
+      window.open("https://voorbeeldwebsite.com/leverin", "_blank");
+    }
+  
+    window.onload = () => loadPyodideAndSetup();
+  </script>
+</body>
+</html>
