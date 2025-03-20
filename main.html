@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Forensische ICT Opdracht</title>
   <style>
-    /* Zorg dat alle elementen de padding en border meerekenen in de breedte */
+    /* Globale box-sizing regel */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -45,7 +45,7 @@
     #terminal-container {
       text-align: left;
     }
-    /* Toolbar: zorg dat de toolbar exact even breed is als de terminal */
+    /* Toolbar styling */
     #toolbar {
       background-color: #f5f5f5;
       border: 1px solid #ccc;
@@ -190,8 +190,6 @@
     // Stel de titel in (zowel in het <title>-element als in de header)
     document.title = pageTitle;
     document.getElementById("page-title").innerText = pageTitle;
-
-    // Stel de opdrachtbeschrijving in zodra de pagina laadt
     document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
 
     const applicatie_naam = "Opdracht1";
@@ -245,16 +243,25 @@
       return new Promise((resolve) => {
         inputModal.style.display = "block";
         inputResolver = resolve;
+        // Zorg dat het invoerveld direct de focus krijgt
+        userInput.focus();
       });
     }
   
     function submitInput() {
       inputModal.style.display = "none";
-      let inputValue = userInput.value;
+      const inputValue = userInput.value;
       terminal.innerHTML += `<i>${inputValue}\n</i>`;
       userInput.value = "";
       inputResolver(inputValue);
     }
+  
+    // Voeg een eventlistener toe aan het invoerveld om op Enter te reageren
+    userInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        submitInput();
+      }
+    });
   
     function toggleTerminal() {
       const isVisible = window.getComputedStyle(terminal).display !== "none";
