@@ -20,7 +20,7 @@
     }
     /* Aangepast moeilijkheidslabel: helft kleiner en groene achtergrond */
     #difficulty {
-      font-size: 0.6em; /* half zo groot als 1.2em */
+      font-size: 0.9em; /* half zo groot als 1.2em */
       font-weight: bold;
       color: white;
       background-color: #28a745; /* groene kleur */
@@ -43,23 +43,32 @@
     }
     /* Toolbar: balk met icon-knoppen, standaard verborgen */
     #toolbar {
-      background-color: #f5f5f5;
-      border: 1px solid #ccc;
-      padding: 3px 0;
-      margin-bottom: 3px;
-      width: 100%;
-      display: none;
-      display: flex;
-      align-items: center;
-    }
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 3px 0;
+  margin-bottom: 3px;
+  width: 100%;
+  display: flex;
+  align-items: center; /* Dit centreert de items verticaal */
+}
     /* Icon-knoppen in de toolbar */
     #toolbar button.icon {
-      margin-right: 10px;
-      padding: 0;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  justify-content: center;
+  margin-right: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  /* Eventueel een vaste hoogte zodat je het effect duidelijk ziet */
+  height: 40px;
+}
+#toolbar button.icon svg {
+  display: block;
+  margin: auto;
+}
     /* Terminal (console) styling */
     #terminal {
       width: 100%;
@@ -126,7 +135,7 @@
     <!-- Terminal container met toolbar en console -->
     <div id="terminal-container">
       <!-- Toolbar met icon-knoppen -->
-      <div id="toolbar">
+      <div id="toolbar" style="display: none;">
         <button id="runButton" class="icon" style="display: none;" onclick="runPythonCode()" title="Voer code uit">
           <svg height="24" width="24" version="1.1" xmlns="http://www.w3.org/2000/svg" 
                xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
