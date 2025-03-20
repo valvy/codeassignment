@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Forensische ICT Opdracht</title>
   <style>
-   #main-container {
+    /* Zorg dat alle elementen de padding en border meerekenen in de breedte */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    #main-container {
       margin-left: 20px;
       width: 80%;
     }
@@ -20,10 +24,10 @@
     }
     /* Aangepast moeilijkheidslabel: helft kleiner en groene achtergrond */
     #difficulty {
-      font-size: 0.9em; /* half zo groot als 1.2em */
+      font-size: 0.9em;
       font-weight: bold;
       color: white;
-      background-color: #28a745; /* groene kleur */
+      background-color: #28a745;
       display: inline-block;
       padding: 5px 15px;
       border-radius: 5px;
@@ -41,34 +45,32 @@
     #terminal-container {
       text-align: left;
     }
-    /* Toolbar: balk met icon-knoppen, standaard verborgen */
+    /* Toolbar: zorg dat de toolbar exact even breed is als de terminal */
     #toolbar {
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
-  padding: 3px 0;
-  margin-bottom: 3px;
-  width: 100%;
-  display: flex;
-  align-items: center; /* Dit centreert de items verticaal */
-}
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      padding: 3px 0;
+      margin-bottom: 3px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
     /* Icon-knoppen in de toolbar */
     #toolbar button.icon {
-  display: flex;
-  align-items: center;
-  margin-left: 10px;
-  justify-content: center;
-  margin-right: 10px;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  /* Eventueel een vaste hoogte zodat je het effect duidelijk ziet */
-  height: 40px;
-}
-#toolbar button.icon svg {
-  display: block;
-  margin: auto;
-}
+      display: flex;
+      align-items: center;
+      margin: 0 10px;
+      padding: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      height: 40px;
+      justify-content: center;
+    }
+    #toolbar button.icon svg {
+      display: block;
+      margin: auto;
+    }
     /* Terminal (console) styling */
     #terminal {
       width: 100%;
@@ -82,7 +84,7 @@
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
     }
-    /* Globale styling voor niet-icon knoppen */
+    /* Globale styling voor knoppen */
     button {
       font-size: 1em;
       cursor: pointer;
@@ -122,7 +124,7 @@
   <div id="main-container">
     <!-- Header met titel, moeilijkheidsniveau en opdrachtomschrijving -->
     <div id="header-container">
-      <h1>Forensische ICT Opdracht</h1>
+      <h1 id="page-title">Forensische ICT Opdracht</h1>
       <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
       <p id="assignment-description">Los de volgende programmeeropdracht op met de gegeven terminal.</p>
     </div>
@@ -181,6 +183,17 @@
   </div>
   
   <script>
+    // Variabelen met de titel en opdrachtbeschrijving
+    const pageTitle = "Forensische ICT Opdracht";
+    const opdrachtBeschrijving = "Los de volgende programmeeropdracht op met de gegeven terminal.";
+
+    // Stel de titel in (zowel in het <title>-element als in de header)
+    document.title = pageTitle;
+    document.getElementById("page-title").innerText = pageTitle;
+
+    // Stel de opdrachtbeschrijving in zodra de pagina laadt
+    document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
+
     const applicatie_naam = "Opdracht1";
     const pythonCode = `
         x = int(input('test '))
@@ -227,8 +240,8 @@
       }
     }
   
-    function getInputFromUser(dat) {
-      terminal.innerHTML += `> ${dat}`;
+    function getInputFromUser(promptText) {
+      terminal.innerHTML += `> ${promptText}`;
       return new Promise((resolve) => {
         inputModal.style.display = "block";
         inputResolver = resolve;
