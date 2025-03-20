@@ -5,25 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Forensische ICT Opdracht</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+   #main-container {
+      margin-left: 20px;
+      width: 80%;
     }
-    /* Header: links uitgelijnd */
+    /* Header: titel, moeilijkheidslabel en opdrachtomschrijving */
     #header-container {
       text-align: left;
-      margin-left: 20px;
       margin-bottom: 20px;
     }
     #header-container h1 {
       margin: 0;
       padding: 0;
     }
+    /* Aangepast moeilijkheidslabel: helft kleiner en groene achtergrond */
     #difficulty {
-      font-size: 1.2em;
+      font-size: 0.6em; /* half zo groot als 1.2em */
       font-weight: bold;
       color: white;
-      background-color: #007bff;
+      background-color: #28a745; /* groene kleur */
       display: inline-block;
       padding: 5px 15px;
       border-radius: 5px;
@@ -32,31 +32,29 @@
     #assignment-description {
       margin-top: 10px;
     }
-    /* Toggle-knop container */
+    /* Container voor de toggle-knop */
     #button-container {
       text-align: left;
-      margin-left: 20px;
       margin-bottom: 10px;
     }
-    /* Terminal-container met vaste breedte en linker marge zodat alles netjes onder elkaar komt */
+    /* Terminal-container waarin ook de toolbar zit */
     #terminal-container {
-      margin-left: 20px;
-      width: 80%;
+      text-align: left;
     }
-    /* Toolbar: met iets hogere verticale padding en min-height zodat de icon-knoppen netjes staan */
+    /* Toolbar: balk met icon-knoppen, standaard verborgen */
     #toolbar {
       background-color: #f5f5f5;
       border: 1px solid #ccc;
-      padding: 3px 0; /* verhoogde verticale padding */
+      padding: 3px 0;
       margin-bottom: 3px;
       width: 100%;
-      min-height: 24px;
+      display: none;
       display: flex;
       align-items: center;
     }
-    /* Specifieke stijl voor icon-knoppen binnen de toolbar om globale margin/padding te overschrijven */
+    /* Icon-knoppen in de toolbar */
     #toolbar button.icon {
-      margin: 0 10px 0 0;
+      margin-right: 10px;
       padding: 0;
       background: none;
       border: none;
@@ -70,13 +68,12 @@
       color: #00ff00;
       padding: 10px;
       border-radius: 5px;
-      text-align: left;
       overflow-y: auto;
       display: none;
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
     }
-    /* Globale styling voor knoppen (voor niet-icon knoppen) */
+    /* Globale styling voor niet-icon knoppen */
     button {
       font-size: 1em;
       cursor: pointer;
@@ -86,14 +83,15 @@
       color: white;
       border: none;
       border-radius: 5px;
-      margin: 10px;
+      margin: 10px 0;
       padding: 10px 20px;
     }
-    /* Submit-knop container links uitgelijnd */
+    /* Container voor de inleverknop */
     #submit-container {
       text-align: left;
-      margin-left: 20px;
+      margin-top: 10px;
     }
+    /* Input Modal styling */
     #inputModal {
       display: none;
       position: fixed;
@@ -112,57 +110,59 @@
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
 <body>
-  <!-- Header met titel, moeilijkheidsniveau en opdrachtomschrijving -->
-  <div id="header-container">
-    <h1>Forensische ICT Opdracht</h1>
-    <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
-    <p id="assignment-description">Los de volgende programmeeropdracht op met de gegeven terminal.</p>
-  </div>
-  
-  <!-- Toggle knop bovenaan -->
-  <div id="button-container">
-    <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Toon/Verberg Terminal</button>
-  </div>
-  
-  <!-- Terminal container met toolbar en console -->
-  <div id="terminal-container">
-    <!-- Toolbar met de twee SVG-knoppen -->
-    <div id="toolbar">
-      <button id="runButton" class="icon" style="display: none;" onclick="runPythonCode()" title="Voer code uit">
-        <svg height="24" width="24" version="1.1" xmlns="http://www.w3.org/2000/svg" 
-             xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
-          <style type="text/css">
-            .st0 { fill: #000000; }
-          </style>
-          <g>
-            <path class="st0" d="M256,0C114.625,0,0,114.625,0,256c0,141.374,114.625,256,256,256
-              c141.374,0,256-114.626,256-256C512,114.625,397.374,0,256,0z M351.062,258.898l-144,85.945
-              c-1.031,0.626-2.344,0.657-3.406,0.031c-1.031-0.594-1.687-1.702-1.687-2.937v-85.946v-85.946
-              c0-1.218,0.656-2.343,1.687-2.938c1.062-0.609,2.375-0.578,3.406,0.031l144,85.962
-              c1.031,0.586,1.641,1.718,1.641,2.89C352.703,257.187,352.094,258.297,351.062,258.898z"/>
-          </g>
-        </svg>
-      </button>
-      <button id="clearButton" class="icon" style="display: none;" onclick="clearTerminal()" title="Maak de terminal leeg">
-        <svg width="24" height="24" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-          <g fill="none" fill-rule="evenodd" stroke="#000000" stroke-linecap="round" stroke-linejoin="round"
-             transform="matrix(0 1 1 0 2.5 2.5)">
-            <path d="m13 11 3 3v-6c0-3.36502327-2.0776-6.24479706-5.0200433-7.42656457
-              -.9209869-.36989409-1.92670197-.57343543-2.9799567-.57343543
-              -4.418278 0-8 3.581722-8 8s3.581722 8 8 8c1.48966767 0 3.4724708-.3698516 5.0913668-1.5380762"/>
-            <path d="m5 5 6 6"/>
-            <path d="m11 5-6 6"/>
-          </g>
-        </svg>
-      </button>
+  <div id="main-container">
+    <!-- Header met titel, moeilijkheidsniveau en opdrachtomschrijving -->
+    <div id="header-container">
+      <h1>Forensische ICT Opdracht</h1>
+      <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
+      <p id="assignment-description">Los de volgende programmeeropdracht op met de gegeven terminal.</p>
     </div>
-    <!-- Console window -->
-    <div id="terminal"></div>
-  </div>
-  
-  <!-- Inleveren knop -->
-  <div id="submit-container">
-    <button class="normal" onclick="submitAssignment()" title="Lever je opdracht in">Lever in</button>
+    
+    <!-- Toggle knop -->
+    <div id="button-container">
+      <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Toon/Verberg Terminal</button>
+    </div>
+    
+    <!-- Terminal container met toolbar en console -->
+    <div id="terminal-container">
+      <!-- Toolbar met icon-knoppen -->
+      <div id="toolbar">
+        <button id="runButton" class="icon" style="display: none;" onclick="runPythonCode()" title="Voer code uit">
+          <svg height="24" width="24" version="1.1" xmlns="http://www.w3.org/2000/svg" 
+               xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
+            <style type="text/css">
+              .st0 { fill: #000000; }
+            </style>
+            <g>
+              <path class="st0" d="M256,0C114.625,0,0,114.625,0,256c0,141.374,114.625,256,256,256
+                c141.374,0,256-114.626,256-256C512,114.625,397.374,0,256,0z M351.062,258.898l-144,85.945
+                c-1.031,0.626-2.344,0.657-3.406,0.031c-1.031-0.594-1.687-1.702-1.687-2.937v-85.946v-85.946
+                c0-1.218,0.656-2.343,1.687-2.938c1.062-0.609,2.375-0.578,3.406,0.031l144,85.962
+                c1.031,0.586,1.641,1.718,1.641,2.89C352.703,257.187,352.094,258.297,351.062,258.898z"/>
+            </g>
+          </svg>
+        </button>
+        <button id="clearButton" class="icon" style="display: none;" onclick="clearTerminal()" title="Maak de terminal leeg">
+          <svg width="24" height="24" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+            <g fill="none" fill-rule="evenodd" stroke="#000000" stroke-linecap="round" stroke-linejoin="round"
+               transform="matrix(0 1 1 0 2.5 2.5)">
+              <path d="m13 11 3 3v-6c0-3.36502327-2.0776-6.24479706-5.0200433-7.42656457
+                -.9209869-.36989409-1.92670197-.57343543-2.9799567-.57343543
+                -4.418278 0-8 3.581722-8 8s3.581722 8 8 8c1.48966767 0 3.4724708-.3698516 5.0913668-1.5380762"/>
+              <path d="m5 5 6 6"/>
+              <path d="m11 5-6 6"/>
+            </g>
+          </svg>
+        </button>
+      </div>
+      <!-- Console window -->
+      <div id="terminal"></div>
+    </div>
+    
+    <!-- Inleverknop -->
+    <div id="submit-container">
+      <button class="normal" onclick="submitAssignment()" title="Lever je opdracht in">Lever in</button>
+    </div>
   </div>
   
   <div id="inputModal">
@@ -186,6 +186,7 @@
     const userInput = document.getElementById("userInput");
     const runButton = document.getElementById("runButton");
     const clearButton = document.getElementById("clearButton");
+    const toolbar = document.getElementById("toolbar");
   
     function preprocess_code(code) {
       return code.replace('input(', 'await input(');
@@ -234,10 +235,19 @@
     }
   
     function toggleTerminal() {
-      const isVisible = terminal.style.display === "block";
-      terminal.style.display = isVisible ? "none" : "block";
-      runButton.style.display = isVisible ? "none" : "inline-block";
-      clearButton.style.display = isVisible ? "none" : "inline-block";
+      const isVisible = window.getComputedStyle(terminal).display !== "none";
+  
+      if (isVisible) {
+        terminal.style.display = "none";
+        toolbar.style.display = "none";
+        runButton.style.display = "none";
+        clearButton.style.display = "none";
+      } else {
+        terminal.style.display = "block";
+        toolbar.style.display = "flex";
+        runButton.style.display = "inline-block";
+        clearButton.style.display = "inline-block";
+      }
     }
   
     function submitAssignment() {
