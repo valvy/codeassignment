@@ -43,18 +43,24 @@
       margin-left: 20px;
       width: 80%;
     }
-    /* Toolbar met minder padding zodat deze minder dik is */
+    /* Toolbar: met iets hogere verticale padding en min-height zodat de icon-knoppen netjes staan */
     #toolbar {
       background-color: #f5f5f5;
       border: 1px solid #ccc;
-      padding: 1px;  /* Minder padding zorgt voor een minder dikke balk */
+      padding: 3px 0; /* verhoogde verticale padding */
       margin-bottom: 3px;
       width: 100%;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
     }
-    /* Zorg dat de SVG-knoppen in de toolbar links staan en wat marge rechts hebben */
-    #toolbar button {
-      margin-right: 10px;
-      vertical-align: middle;
+    /* Specifieke stijl voor icon-knoppen binnen de toolbar om globale margin/padding te overschrijven */
+    #toolbar button.icon {
+      margin: 0 10px 0 0;
+      padding: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
     }
     /* Terminal (console) styling */
     #terminal {
@@ -70,10 +76,8 @@
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
     }
-    /* Globale styling voor knoppen */
+    /* Globale styling voor knoppen (voor niet-icon knoppen) */
     button {
-      margin: 10px;
-      padding: 10px 20px;
       font-size: 1em;
       cursor: pointer;
     }
@@ -82,10 +86,8 @@
       color: white;
       border: none;
       border-radius: 5px;
-    }
-    button.icon {
-      background: none;
-      border: none;
+      margin: 10px;
+      padding: 10px 20px;
     }
     /* Submit-knop container links uitgelijnd */
     #submit-container {
