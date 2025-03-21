@@ -43,6 +43,17 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    /* Overlay om achtergrond interactie te blokkeren */
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 900;
+      background: rgba(0,0,0,0);
+    }
     /* Verberg de applicatie tot darkmode en Pyodide geladen is */
     #main-container {
       display: none;
@@ -229,6 +240,27 @@
     body.dark-mode #darkModeToggle svg {
       fill: #e0e0e0;
     }
+    /* Fullscreen toggle: naast de darkmode toggle */
+    #fullscreenToggle {
+      position: fixed;
+      top: 20px;
+      right: 60px;
+      z-index: 1001;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      transition: fill 0.3s;
+    }
+    #fullscreenToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: #007bff;
+      transition: fill 0.3s;
+    }
+    body.dark-mode #fullscreenToggle svg {
+      fill: #e0e0e0;
+    }
     /* Input Modal styling (voor tekstinvoer) */
     #inputModal {
       display: none;
@@ -240,6 +272,7 @@
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 1100;
     }
     #inputModal input {
       width: 80%;
@@ -324,6 +357,9 @@
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
 <body>
+  <!-- Overlay om achtergrond interactie te blokkeren -->
+  <div id="overlay"></div>
+  
   <!-- Laadanimatie -->
   <div id="loader">
     <div class="spinner"></div>
@@ -358,6 +394,12 @@
             </g>
           </g>
         </g>
+      </svg>
+    </button>
+    <!-- Fullscreen toggle knop -->
+    <button id="fullscreenToggle" title="Toggle Fullscreen">
+      <svg viewBox="0 0 24 24">
+        <path d="M7 14H5v5h5v-2H7zm0-9h5V3H7c-1.1 0-2 .9-2 2v5h2V5zm10 0v2h3v3h2V5c0-1.1-.9-2-2-2h-5v2h5zm-2 9h3v3h2v5c0 1.1-.9 2-2 2h-5v-2h5z"/>
       </svg>
     </button>
     <!-- Beide knoppen in één container zodat ze naast elkaar komen -->
@@ -467,6 +509,7 @@
     const clearButton = document.getElementById("clearButton");
     const toolbar = document.getElementById("toolbar");
     const darkModeToggle = document.getElementById("darkModeToggle");
+    const fullscreenToggle = document.getElementById("fullscreenToggle");
     const mainContainer = document.getElementById("main-container");
     const loader = document.getElementById("loader");
     const submissionIframe = document.getElementById("submissionIframe");
@@ -506,8 +549,9 @@
     function getInputFromUser(promptText) {
       terminal.innerHTML += `> ${promptText}`;
       msg_modal.innerHTML = promptText;
+      inputModal.style.display = "block";
+      document.getElementById("overlay").style.display = "block";
       return new Promise((resolve) => {
-        inputModal.style.display = "block";
         inputResolver = resolve;
         userInputEl.focus();
       });
@@ -515,6 +559,7 @@
   
     function submitInput() {
       inputModal.style.display = "none";
+      document.getElementById("overlay").style.display = "none";
       const inputValue = userInputEl.value;
       terminal.innerHTML += `<i>${inputValue}\n</i>`;
       userInputEl.value = "";
@@ -544,11 +589,45 @@
   
     function openSubmissionModal() {
       document.getElementById("submissionModal").style.display = "flex";
+      document.getElementById("overlay").style.display = "block";
     }
   
     function closeSubmissionModal() {
       document.getElementById("submissionModal").style.display = "none";
+      document.getElementById("overlay").style.display = "none";
     }
+  
+    function openAlertModal(message) {
+      document.getElementById("alertMessage").innerText = message;
+      document.getElementById("alertModal").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    
+    function closeAlertModal() {
+      document.getElementById("alertModal").style.display = "none";
+      document.getElementById("overlay").style.display = "none";
+    }
+  
+    // Fullscreen toggle functie
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  
+    // Evenementen koppelen
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+    });
+  
+    fullscreenToggle.addEventListener('click', () => {
+      toggleFullScreen();
+    });
   
     // Helper-functie om de numerieke moeilijkheidsgraad te bepalen
     function getDifficultyLevel(labels) {
@@ -612,9 +691,9 @@
   
           // Vergelijk de moeilijkheidsgraad en toon een beschrijvende modal als er een mismatch is
           if (userLevel > exerciseLevel) {
-            openAlertModal("Op basis van jouw profiel (ingedeeld als " + levelToString(userLevel) + ") is deze oefening, die gericht is op " + levelToString(exerciseLevel) + ", waarschijnlijk te makkelijk voor jou.");
+            openAlertModal("Op basis van de eerder gemaakte quiz (uitkomst " + levelToString(userLevel) + ") is deze oefening waarschijnlijk te makkelijk voor jou.");
           } else if (userLevel < exerciseLevel) {
-            openAlertModal("Op basis van jouw profiel (ingedeeld als " + levelToString(userLevel) + ") is deze oefening, die gericht is op " + levelToString(exerciseLevel) + ", waarschijnlijk te moeilijk voor jou.");
+            openAlertModal("Op basis van jouw profiel (uitkomst " + levelToString(userLevel) + ") is deze oefening  waarschijnlijk te uitdagend voor jou.");
           }
   
         } catch (err) {
@@ -622,20 +701,6 @@
         }
       });
     };
-  
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
-    });
-    
-    function openAlertModal(message) {
-      document.getElementById("alertMessage").innerText = message;
-      document.getElementById("alertModal").style.display = "block";
-    }
-    
-    function closeAlertModal() {
-      document.getElementById("alertModal").style.display = "none";
-    }
   </script>
   
 </body>
