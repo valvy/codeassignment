@@ -221,7 +221,7 @@
     body.dark-mode #darkModeToggle svg {
       fill: #e0e0e0;
     }
-    /* Input Modal styling, nu met dezelfde knopstijl */
+    /* Input Modal styling (voor tekstinvoer) */
     #inputModal {
       display: none;
       position: fixed;
@@ -242,6 +242,58 @@
     body.dark-mode #inputModal {
       background: #333;
       color: #e0e0e0;
+    }
+    /* Submission Modal styling: modal die de website in een iframe toont met een cancel knop */
+    #submissionModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1100;
+      justify-content: center;
+      align-items: center;
+      /* Fade-in animatie */
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    #submissionModal .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      width: 90%;
+      max-width: 800px;
+      height: 80%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    #submissionModal iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      flex-grow: 1;
+    }
+    #submissionModal .cancelButton {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #ccc;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
@@ -282,7 +334,7 @@
     <!-- Beide knoppen in één container zodat ze naast elkaar komen -->
     <div id="button-container">
       <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Ervaar hoe de applicatie moet werken</button>
-      <button class="normal" onclick="submitAssignment()" title="Lever je opdracht in">Lever je opdracht in codegrade</button>
+      <button class="normal" onclick="openSubmissionModal()" title="Lever je opdracht in">Lever je opdracht in codegrade</button>
     </div>
     <div id="terminal-container">
       <div id="toolbar" style="display: none;">
@@ -318,14 +370,25 @@
     </div>
   </div>
   
-  <!-- Input Modal -->
+  <!-- Input Modal (voor tekstinvoer) -->
   <div id="inputModal">
     <p id="msg">Voer een waarde in:</p>
     <input type="text" id="userInput">
     <button class="normal" onclick="submitInput()">OK</button>
   </div>
   
+  <!-- Submission Modal: hierin wordt de website geladen met een iframe en een cancel knop -->
+  <div id="submissionModal">
+    <div class="modal-content">
+      <button class="cancelButton" onclick="closeSubmissionModal()">Cancel</button>
+      <iframe id="submissionIframe"></iframe>
+    </div>
+  </div>
+  
   <script>
+    // Globale constante voor de submission URL
+    const SUBMISSION_URL = "https://app.codegra.de/";
+    
     const pageTitle = "Forensische ICT Opdracht";
     const opdrachtBeschrijving = `
 Je wilt een stukje geheime informatie naar het openbaar ministerie sturen. 
@@ -351,13 +414,17 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
     const terminal = document.getElementById("terminal");
     const msg_modal = document.getElementById("msg");
     const inputModal = document.getElementById("inputModal");
-    const userInput = document.getElementById("userInput");
+    const userInputEl = document.getElementById("userInput");
     const runButton = document.getElementById("runButton");
     const clearButton = document.getElementById("clearButton");
     const toolbar = document.getElementById("toolbar");
     const darkModeToggle = document.getElementById("darkModeToggle");
     const mainContainer = document.getElementById("main-container");
     const loader = document.getElementById("loader");
+    const submissionIframe = document.getElementById("submissionIframe");
+  
+    // Stel de iframe URL in via de globale constante
+    submissionIframe.src = SUBMISSION_URL;
   
     function preprocess_code(code) {
       return code.replace('input(', ' await input(').replace('(input(', ' (await input(');
@@ -395,19 +462,19 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
       return new Promise((resolve) => {
         inputModal.style.display = "block";
         inputResolver = resolve;
-        userInput.focus();
+        userInputEl.focus();
       });
     }
   
     function submitInput() {
       inputModal.style.display = "none";
-      const inputValue = userInput.value;
+      const inputValue = userInputEl.value;
       terminal.innerHTML += `<i>${inputValue}\n</i>`;
-      userInput.value = "";
+      userInputEl.value = "";
       inputResolver(inputValue);
     }
   
-    userInput.addEventListener("keydown", (event) => {
+    userInputEl.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         submitInput();
       }
@@ -428,14 +495,20 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
       }
     }
   
-    function submitAssignment() {
-      window.open("https://voorbeeldwebsite.com/leverin", "_blank");
+    function openSubmissionModal() {
+      document.getElementById("submissionModal").style.display = "flex";
     }
+  
+    function closeSubmissionModal() {
+      document.getElementById("submissionModal").style.display = "none";
+    }
+  
     if (sessionStorage.getItem("darkMode") === "true") {
-        document.body.classList.add("dark-mode");
+      document.body.classList.add("dark-mode");
     } else {
-        document.body.classList.remove("dark-mode");
+      document.body.classList.remove("dark-mode");
     }
+  
     window.onload = () => {
       loadPyodideAndSetup().then(() => {
         loader.style.display = "none";
