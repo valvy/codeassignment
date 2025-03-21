@@ -174,7 +174,6 @@
 
   <script>
     // Klasse 'Scherm' definieert een vragenscherm met vraag, media en multiplechoice-opties.
-    // De optionele parameter 'crop' (standaard true) geeft aan of de afbeelding bijgesneden mag worden.
     class Scherm {
       /**
        * @param {string} vraag - De vraagtekst.
@@ -229,7 +228,7 @@
           { text: "Een beetje", value: 1 },
           { text: "Ja", value: 2 }
         ],
-        false  // Deze afbeelding wordt niet bijgesneden.
+        false
       )
     ];
 
@@ -239,12 +238,8 @@
     vraagSchermen.forEach((scherm, index) => {
       const div = document.createElement('div');
       div.classList.add('screen');
-      if (index === 0) {
-        div.style.display = 'block';
-        div.style.transform = 'translateX(0)';
-      } else {
-        div.style.display = 'none';
-      }
+      div.style.display = index === 0 ? 'block' : 'none';
+      div.style.transform = index === 0 ? 'translateX(0)' : '';
       
       let optiesHTML = `<div class="options-container">`;
       scherm.opties.forEach(optie => {
@@ -257,8 +252,6 @@
       });
       optiesHTML += `</div>`;
 
-      // Voeg extra klasse 'no-crop' toe als crop false is.
-      // Voor het laatste scherm voegen we extra 'last' toe.
       const mediaClass = scherm.crop 
         ? 'media-container' 
         : 'media-container no-crop' + (index === vraagSchermen.length - 1 ? ' last' : '');
@@ -289,8 +282,8 @@
         <p id="result-text">Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:</p>
         <!-- Labels worden hier toegevoegd -->
         <div id="labels-container"></div>
-        <!-- Eindboodschap -->
-        <p id="final-message">pizza</p>
+        <!-- Aanbevelingstekst wordt hier geplaatst -->
+        <p id="final-message"></p>
       </div>
     `;
     quizContainer.appendChild(finalScreen);
@@ -301,8 +294,20 @@
     const prevBtn = document.getElementById('prevBtn');
 
     function updateNavButtons() {
-      prevBtn.style.display = currentScreen === 0 ? 'none' : 'inline-block';
-      nextBtn.style.display = currentScreen === screens.length - 1 ? 'none' : 'inline-block';
+      if (currentScreen === 0) {
+        prevBtn.style.display = 'none';
+      } else {
+        prevBtn.style.display = 'inline-block';
+      }
+      if (currentScreen === screens.length - 1) {
+        prevBtn.textContent = "maak de quiz opnieuw";
+        prevBtn.style.backgroundColor = 'red';
+        nextBtn.style.display = 'none';
+      } else {
+        prevBtn.textContent = "Vorige";
+        prevBtn.style.backgroundColor = '#333';
+        nextBtn.style.display = 'inline-block';
+      }
     }
 
     function updateNextButtonState() {
@@ -329,15 +334,15 @@
         }
       }
       
-      // Maak een lege container voor de labels
       const labelsContainer = document.getElementById('labels-container');
-      labelsContainer.innerHTML = ''; // reset vorige labels
+      labelsContainer.innerHTML = '';
 
-      // Voeg labels toe op basis van score
+      // Bepaal welke profielen aanwezig zijn
+      let hasExpert = false, hasSkilled = false, hasAspiring = false;
       if (totalScore > 5) {
+        hasExpert = true;
         const expertLabel = document.createElement('span');
         expertLabel.textContent = 'expert developer';
-        // Expert label krijgt nu een rode achtergrond
         expertLabel.style.backgroundColor = 'red';
         expertLabel.style.color = 'white';
         expertLabel.style.padding = '5px 10px';
@@ -345,8 +350,8 @@
         expertLabel.style.borderRadius = '5px';
         labelsContainer.appendChild(expertLabel);
       }
-
       if (totalScore >= 3 && totalScore <= 6) {
+        hasSkilled = true;
         const skilledLabel = document.createElement('span');
         skilledLabel.textContent = 'skilled developer';
         skilledLabel.style.backgroundColor = 'green';
@@ -356,8 +361,8 @@
         skilledLabel.style.borderRadius = '5px';
         labelsContainer.appendChild(skilledLabel);
       }
-
       if (totalScore >= -100 && totalScore <= 4) {
+        hasAspiring = true;
         const aspiringLabel = document.createElement('span');
         aspiringLabel.textContent = 'aspiring developer';
         aspiringLabel.style.backgroundColor = 'blue';
@@ -368,13 +373,39 @@
         labelsContainer.appendChild(aspiringLabel);
       }
 
-      // Pas de tekst aan op basis van het aantal labels
       const resultTextElement = document.getElementById('result-text');
       if (labelsContainer.childNodes.length === 1) {
         resultTextElement.textContent = "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:";
       } else {
         resultTextElement.textContent = "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
       }
+      
+      // Bouw de aanbevelingstekst op basis van de combinatie
+      let finalMessageText = "";
+      if (hasAspiring && !hasSkilled && !hasExpert) {
+        finalMessageText = "Aangezien je profiel de kenmerken van een aspiring developer toont, wordt aanbevolen om de aspiring developer opdrachten te maken. Deze opdrachten zijn uitdagend maar speciaal bedoeld voor beginnende programmeurs. Expert developer opdrachten wordt afgeraden.";
+      } else if (hasSkilled && !hasAspiring && !hasExpert) {
+        finalMessageText = "Je resultaat duidt op vaardigheden die passen bij een skilled developer. Je kunt beginnen met de opdrachten voor een skilled developer. Je mag eventueel de expert developer opdrachten bekijken, maar investeer hier niet te veel tijd in.";
+      } else if (hasExpert && !hasSkilled && !hasAspiring) {
+        finalMessageText = "Je profiel laat zien dat je een expert developer bent. We adviseren je daarom om uitsluitend de meest uitdagende, expert-level opdrachten te doen.";
+      } else if (hasSkilled && hasExpert && !hasAspiring) {
+        // Nu de nuance voor een combinatie van skilled en expert
+        finalMessageText = "Je resultaat toont zowel de solide basis van een skilled developer als de complexiteit van een expert developer. Begin met de opdrachten voor skilled developers om je fundament te versterken, en als je merkt dat je deze beheerst, kun je geleidelijk de meest uitdagende expert-level opdrachten oppakken. Zorg dat je de basis eerst goed op orde hebt voordat je overgaat op de hoogste uitdagingen.";
+      } else {
+        // Voor andere combinaties met meerdere aspecten, inclusief aspirant
+        finalMessageText = "Je resultaat toont een genuanceerd profiel met meerdere aspecten. ";
+        if (hasAspiring) {
+          finalMessageText += "De aspiring developer opdrachten bieden een goede basis voor beginnende programmeurs, ";
+        }
+        if (hasSkilled) {
+          finalMessageText += "terwijl de skilled developer opdrachten je vaardigheden verder ontwikkelen. ";
+        }
+        if (hasExpert) {
+          finalMessageText += "Expert developer opdrachten zijn zeer uitdagend; doe deze alleen als je zeker bent van je vaardigheden. ";
+        }
+        finalMessageText += "Kijk welke opdrachten het beste bij jouw combinatie passen en werk stap voor stap aan je ontwikkeling.";
+      }
+      document.getElementById('final-message').textContent = finalMessageText;
     }
 
     function animateTransition(newIndex, direction) {
@@ -405,8 +436,19 @@
       currentScreen = newIndex;
       if (currentScreen === screens.length - 1) {
         updateScore();
-        startMatrix(); // Start Matrix-animatie op het eindscherm.
+        startMatrix();
       }
+      updateNextButtonState();
+      updateNavButtons();
+    }
+
+    function resetQuiz() {
+      const inputs = document.querySelectorAll('input[type="radio"]');
+      inputs.forEach(input => input.checked = false);
+      screens[currentScreen].style.display = 'none';
+      currentScreen = 0;
+      screens[0].style.display = 'block';
+      screens[0].style.transform = 'translateX(0)';
       updateNextButtonState();
       updateNavButtons();
     }
@@ -422,7 +464,9 @@
     });
 
     prevBtn.addEventListener('click', () => {
-      if (currentScreen > 0) {
+      if (currentScreen === screens.length - 1) {
+        resetQuiz();
+      } else if (currentScreen > 0) {
         animateTransition(currentScreen - 1, 'prev');
       }
     });
@@ -430,7 +474,6 @@
     updateNextButtonState();
     updateNavButtons();
 
-    // Matrix-animatie met canvas
     function startMatrix() {
       const canvas = document.getElementById("matrix");
       const ctx = canvas.getContext("2d");
