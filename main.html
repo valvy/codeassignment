@@ -78,9 +78,12 @@
     #assignment-description {
       margin-top: 10px;
     }
+    /* Knoppen container: Flexbox zodat de knoppen naast elkaar komen */
     #button-container {
-      text-align: left;
+      display: flex;
+      gap: 10px;
       margin-bottom: 10px;
+      text-align: left;
     }
     #terminal-container {
       text-align: left;
@@ -183,10 +186,6 @@
     body.dark-mode #darkModeToggle svg {
       fill: #e0e0e0;
     }
-    #submit-container {
-      text-align: left;
-      margin-top: 10px;
-    }
     /* Input Modal styling, nu met dezelfde knopstijl */
     #inputModal {
       display: none;
@@ -224,13 +223,12 @@
       <div id="header-text">
         <h1 id="page-title"></h1>
         <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
-        <br/>
-        <br/>
+        <br/><br/>
         <img height="200" src="https://cdn.nos.nl/image/2020/12/23/701694/2560x1440a.jpg"/>
         <p id="assignment-description"></p>
       </div>
     </div>
-    <!-- Dark mode toggle staat nu fixed rechtsboven -->
+    <!-- Dark mode toggle staat fixed rechtsboven -->
     <button id="darkModeToggle" title="Toggle Dark Mode">
       <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <title>dark-mode-solid</title>
@@ -247,8 +245,10 @@
         </g>
       </svg>
     </button>
+    <!-- Beide knoppen in één container zodat ze naast elkaar komen -->
     <div id="button-container">
       <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Ervaar hoe de applicatie moet werken</button>
+      <button class="normal" onclick="submitAssignment()" title="Lever je opdracht in">Lever je opdracht in codegrade</button>
     </div>
     <div id="terminal-container">
       <div id="toolbar" style="display: none;">
@@ -281,9 +281,6 @@
         </button>
       </div>
       <div id="terminal"></div>
-    </div>
-    <div id="submit-container">
-      <button class="normal" onclick="submitAssignment()" title="Lever je opdracht in">Lever je opdracht in codegrade</button>
     </div>
   </div>
   
