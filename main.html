@@ -124,7 +124,7 @@
       display: block;
       margin: auto;
     }
-    /* Terminal styling */
+    /* Terminal styling met altijd zichtbare en dikkere scrollbar */
     #terminal {
       width: 100%;
       height: 200px;
@@ -132,16 +132,31 @@
       color: #00ff00;
       padding: 10px;
       border-radius: 5px;
-      overflow-y: auto;
+      overflow-y: scroll; /* Altijd scrollbar zichtbaar */
+      scrollbar-gutter: stable; /* Reserveert ruimte voor de scrollbar */
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
       display: none;
       margin-top: 1px;
       position: relative;
+      /* Firefox: scrollbar styling */
+      scrollbar-width: auto;
+      scrollbar-color: #007bff #f0f0f0;
     }
-    /* In dark mode krijgt de terminal een lichtere achtergrond maar blijft donker */
+    /* Aanpassing voor dark mode: maak de terminal lichter zodat deze beter zichtbaar is */
     body.dark-mode #terminal {
-      background: #1e1e1e;
+      background: #2e2e2e;
+    }
+    /* WebKit browsers: scrollbar styling */
+    #terminal::-webkit-scrollbar {
+      width: 16px; /* Dikkere scrollbar */
+    }
+    #terminal::-webkit-scrollbar-track {
+      background: #f0f0f0;
+    }
+    #terminal::-webkit-scrollbar-thumb {
+      background: #007bff;
+      border-radius: 8px;
     }
     /* Blinkende cursor op de laatste regel van de terminal */
     #terminal::after {
