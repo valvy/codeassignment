@@ -303,6 +303,23 @@
       padding: 5px 10px;
       cursor: pointer;
     }
+    /* Alert Modal styling */
+    #alertModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 1100;
+    }
+    body.dark-mode #alertModal {
+      background: #333;
+      color: #e0e0e0;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
@@ -397,47 +414,49 @@
     </div>
   </div>
   
+  <!-- Alert Modal -->
+  <div id="alertModal">
+    <p id="alertMessage"></p>
+    <button class="normal" onclick="closeAlertModal()">OK</button>
+  </div>
+  
   <script>
     // Globale constante voor de submission URL
     const SUBMISSION_URL = "https://app.codegra.de/";
-    
+  
     // Globale booleans voor de labels
     let showExpert = false;
     let showSkilled = true;
     let showAspiring = true;
-    
-
+  
     const pageTitle = "Forensische ICT Opdracht";
     const opdrachtBeschrijving = `
-Je wilt een stukje geheime informatie naar het openbaar ministerie sturen. 
-Je besluit dit te doen door je string te versleutelen met de Caesar versleuteling. 
-Door elke ASCII waarde van elke karakter met een getal (de sleutel) op te hogen.
-Maak een python programma die een string vraagt en een sleutel. Geef vervolgens de versleutelde string
+  Je wilt een stukje geheime informatie naar het openbaar ministerie sturen. 
+  Je besluit dit te doen door je string te versleutelen met de Caesar versleuteling. 
+  Door elke ASCII waarde van elke karakter met een getal (de sleutel) op te hogen.
+  Maak een python programma die een string vraagt en een sleutel. Geef vervolgens de versleutelde string
     `;
-
-    
+  
     const applicatie_naam = "Opdracht1";
     const pythonCode = `
-    woordje = input("Welk woordje wil je versleutelen? ")
-    sleutel = int(input("Welke sleutel wil je gebruiken? "))
-    cipher = ""
-    for i in woordje:
-        cipher += chr(ord(i) + sleutel)
-    print(f"De versleuteling van {woordje} is {cipher}")
+  woordje = input("Welk woordje wil je versleutelen? ")
+  sleutel = int(input("Welke sleutel wil je gebruiken? "))
+  cipher = ""
+  for i in woordje:
+      cipher += chr(ord(i) + sleutel)
+  print(f"De versleuteling van {woordje} is {cipher}")
     `;
-
-    // Functie om de zichtbaarheid van de labels te updaten
+  
     function updateLabels() {
       document.getElementById("labelExpert").style.display = showExpert ? "inline-block" : "none";
       document.getElementById("labelSkilled").style.display = showSkilled ? "inline-block" : "none";
       document.getElementById("labelAspiring").style.display = showAspiring ? "inline-block" : "none";
     }
-    
-
+  
     document.title = pageTitle;
     document.getElementById("page-title").innerText = pageTitle;
     document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
-
+  
     let inputResolver, pyodide;
   
     const terminal = document.getElementById("terminal");
@@ -452,7 +471,6 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
     const loader = document.getElementById("loader");
     const submissionIframe = document.getElementById("submissionIframe");
   
-    // Stel de iframe URL in via de globale constante
     submissionIframe.src = SUBMISSION_URL;
   
     function preprocess_code(code) {
@@ -532,6 +550,25 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
       document.getElementById("submissionModal").style.display = "none";
     }
   
+    // Helper-functie om de numerieke moeilijkheidsgraad te bepalen
+    function getDifficultyLevel(labels) {
+      let level = 0;
+      for (let label of labels) {
+        if (label === "aspiring developer") level = Math.max(level, 1);
+        if (label === "skilled developer") level = Math.max(level, 2);
+        if (label === "expert developer") level = Math.max(level, 3);
+      }
+      return level;
+    }
+  
+    // Helper-functie om een numerieke waarde om te zetten naar tekst
+    function levelToString(level) {
+      if (level === 1) return "aspiring developer";
+      if (level === 2) return "skilled developer";
+      if (level === 3) return "expert developer";
+      return "";
+    }
+  
     if (localStorage.getItem("darkMode") === "true") {
       document.body.classList.add("dark-mode");
     } else {
@@ -542,8 +579,47 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
       loadPyodideAndSetup().then(() => {
         loader.style.display = "none";
         mainContainer.style.display = "block";
-        // Update de labels bij laden
+  
         updateLabels();
+  
+        // ✅ Nieuw: check met quizResult.labels
+        try {
+          const raw = localStorage.getItem("quizResult");
+          if (!raw) {
+            openAlertModal("Je hebt de quiz niet gemaakt. Maak eerst de quiz voordat je deze oefening probeert.");
+            return;
+          }
+  
+          const parsed = JSON.parse(raw);
+          if (!parsed.labels || !Array.isArray(parsed.labels)) {
+            console.warn("quizResult bestaat, maar 'labels' ontbreekt of is geen array:", parsed);
+            return;
+          }
+  
+          // Maak labels lowercase voor vergelijkbare vorm
+          const userLabels = parsed.labels.map(label => label.toLowerCase().trim());
+  
+          const visibleLabels = [];
+          if (showExpert) visibleLabels.push("expert developer");
+          if (showSkilled) visibleLabels.push("skilled developer");
+          if (showAspiring) visibleLabels.push("aspiring developer");
+  
+          console.log("Gebruiker labels:", userLabels);
+          console.log("Zichtbare labels:", visibleLabels);
+  
+          const userLevel = getDifficultyLevel(userLabels);
+          const exerciseLevel = getDifficultyLevel(visibleLabels);
+  
+          // Vergelijk de moeilijkheidsgraad en toon een beschrijvende modal als er een mismatch is
+          if (userLevel > exerciseLevel) {
+            openAlertModal("Op basis van jouw profiel (ingedeeld als " + levelToString(userLevel) + ") is deze oefening, die gericht is op " + levelToString(exerciseLevel) + ", waarschijnlijk te makkelijk voor jou.");
+          } else if (userLevel < exerciseLevel) {
+            openAlertModal("Op basis van jouw profiel (ingedeeld als " + levelToString(userLevel) + ") is deze oefening, die gericht is op " + levelToString(exerciseLevel) + ", waarschijnlijk te moeilijk voor jou.");
+          }
+  
+        } catch (err) {
+          console.error("Fout bij het verwerken van quizResult:", err);
+        }
       });
     };
   
@@ -551,10 +627,16 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
       document.body.classList.toggle('dark-mode');
       localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
     });
-  
-    // Voorbeeld: hier kun je de booleans aanpassen (bijv. via console of een extra knop)
-    // showExpert = false; // Expert label verbergen
-    // updateLabels();
+    
+    function openAlertModal(message) {
+      document.getElementById("alertMessage").innerText = message;
+      document.getElementById("alertModal").style.display = "block";
+    }
+    
+    function closeAlertModal() {
+      document.getElementById("alertModal").style.display = "none";
+    }
   </script>
+  
 </body>
 </html>
