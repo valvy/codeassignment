@@ -160,7 +160,7 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-  </style>
+</style>
 </head>
 <body>
   <div class="quiz-container" id="quiz-container">
@@ -173,14 +173,7 @@
   </div>
 
   <script>
-    // Klasse 'Scherm' definieert een vragenscherm met vraag, media en multiplechoice-opties.
     class Scherm {
-      /**
-       * @param {string} vraag - De vraagtekst.
-       * @param {string} mediaHTML - HTML-code voor de media.
-       * @param {Array} opties - Array van opties; elk object bevat 'text' en 'value'
-       * @param {boolean} [crop=true] - Of de afbeelding bijgesneden mag worden.
-       */
       constructor(vraag, mediaHTML, opties, crop = true) {
         this.vraag = vraag;
         this.mediaHTML = mediaHTML;
@@ -189,7 +182,6 @@
       }
     }
 
-    // Array met vier vragenschermen. Bij het laatste scherm staat crop op false.
     const vraagSchermen = [
       new Scherm(
         "Hoe moeilijk vond je de vorige studietaken van probleem oplossend programmeren?",
@@ -203,7 +195,7 @@
       new Scherm(
         "Heb je voor de vorige opdrachten veel gebruik moeten maken van LLM's zoals chatGPT?",
         `<div class="video-container">
-           <iframe src="https://www.youtube.com/embed/BBaJttSjAHk" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+           <iframe src="https://www.youtube.com/embed/BBaJttSjAHk" allowfullscreen></iframe>
          </div>`,
         [
           { text: "Veel", value: -2 },
@@ -234,26 +226,24 @@
 
     const quizContainer = document.getElementById('quiz-container');
 
-    // Bouw de vragenschermen op
     vraagSchermen.forEach((scherm, index) => {
       const div = document.createElement('div');
       div.classList.add('screen');
       div.style.display = index === 0 ? 'block' : 'none';
       div.style.transform = index === 0 ? 'translateX(0)' : '';
-      
+
       let optiesHTML = `<div class="options-container">`;
       scherm.opties.forEach(optie => {
         optiesHTML += `
           <div class="option">
             <input type="radio" id="q${index}-option${optie.value}" name="question${index}" value="${optie.value}">
             <label for="q${index}-option${optie.value}">${optie.text}</label>
-          </div>
-        `;
+          </div>`;
       });
       optiesHTML += `</div>`;
 
-      const mediaClass = scherm.crop 
-        ? 'media-container' 
+      const mediaClass = scherm.crop
+        ? 'media-container'
         : 'media-container no-crop' + (index === vraagSchermen.length - 1 ? ' last' : '');
 
       div.innerHTML = `
@@ -266,12 +256,11 @@
           <div class="${mediaClass}">
             ${scherm.mediaHTML}
           </div>
-        </div>
-      `;
+        </div>`;
       quizContainer.appendChild(div);
     });
 
-    // Maak het eindscherm met Matrix-animatie aan
+    // Eindscherm
     const finalScreen = document.createElement('div');
     finalScreen.classList.add('screen', 'final-screen');
     finalScreen.style.display = 'none';
@@ -280,12 +269,9 @@
       <div class="final-content">
         <h2>Aanbeveling</h2>
         <p id="result-text">Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:</p>
-        <!-- Labels worden hier toegevoegd -->
         <div id="labels-container"></div>
-        <!-- Aanbevelingstekst wordt hier geplaatst -->
         <p id="final-message"></p>
-      </div>
-    `;
+      </div>`;
     quizContainer.appendChild(finalScreen);
 
     const screens = document.querySelectorAll('.screen');
@@ -333,55 +319,35 @@
           totalScore += parseInt(selected.value, 10);
         }
       }
-      
+
       const labelsContainer = document.getElementById('labels-container');
       labelsContainer.innerHTML = '';
 
-      // Bepaal welke profielen aanwezig zijn
       let hasExpert = false, hasSkilled = false, hasAspiring = false;
-      if (totalScore > 5) {
-        hasExpert = true;
-        const expertLabel = document.createElement('span');
-        expertLabel.textContent = 'expert developer';
-        expertLabel.style.backgroundColor = 'red';
-        expertLabel.style.color = 'white';
-        expertLabel.style.padding = '5px 10px';
-        expertLabel.style.marginRight = '5px';
-        expertLabel.style.borderRadius = '5px';
-        labelsContainer.appendChild(expertLabel);
+      if (totalScore > 5) hasExpert = true;
+      if (totalScore >= 3 && totalScore <= 6) hasSkilled = true;
+      if (totalScore >= -100 && totalScore <= 4) hasAspiring = true;
+
+      const labels = [];
+      if (hasExpert) {
+        labels.push('expert developer');
+        labelsContainer.innerHTML += `<span style="background:red;color:white;padding:5px 10px;margin-right:5px;border-radius:5px;">expert developer</span>`;
       }
-      if (totalScore >= 3 && totalScore <= 6) {
-        hasSkilled = true;
-        const skilledLabel = document.createElement('span');
-        skilledLabel.textContent = 'skilled developer';
-        skilledLabel.style.backgroundColor = 'green';
-        skilledLabel.style.color = 'white';
-        skilledLabel.style.padding = '5px 10px';
-        skilledLabel.style.marginRight = '5px';
-        skilledLabel.style.borderRadius = '5px';
-        labelsContainer.appendChild(skilledLabel);
+      if (hasSkilled) {
+        labels.push('skilled developer');
+        labelsContainer.innerHTML += `<span style="background:green;color:white;padding:5px 10px;margin-right:5px;border-radius:5px;">skilled developer</span>`;
       }
-      if (totalScore >= -100 && totalScore <= 4) {
-        hasAspiring = true;
-        const aspiringLabel = document.createElement('span');
-        aspiringLabel.textContent = 'aspiring developer';
-        aspiringLabel.style.backgroundColor = 'blue';
-        aspiringLabel.style.color = 'white';
-        aspiringLabel.style.padding = '5px 10px';
-        aspiringLabel.style.marginRight = '5px';
-        aspiringLabel.style.borderRadius = '5px';
-        labelsContainer.appendChild(aspiringLabel);
+      if (hasAspiring) {
+        labels.push('aspiring developer');
+        labelsContainer.innerHTML += `<span style="background:blue;color:white;padding:5px 10px;margin-right:5px;border-radius:5px;">aspiring developer</span>`;
       }
 
       const resultTextElement = document.getElementById('result-text');
-      if (labelsContainer.childNodes.length === 1) {
-        resultTextElement.textContent = "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:";
-      } else {
-        resultTextElement.textContent = "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
-      }
-      
-      // Bouw de aanbevelingstekst op basis van de combinatie
-      let finalMessageText = "";
+      resultTextElement.textContent = labels.length === 1
+        ? "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:"
+        : "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
+
+        let finalMessageText = "";
       if (hasAspiring && !hasSkilled && !hasExpert) {
         finalMessageText = "Aangezien je profiel de kenmerken van een aspiring developer toont, wordt aanbevolen om de aspiring developer opdrachten te maken. Deze opdrachten zijn uitdagend maar speciaal bedoeld voor beginnende programmeurs. Expert developer opdrachten wordt afgeraden.";
       } else if (hasSkilled && !hasAspiring && !hasExpert) {
@@ -405,7 +371,15 @@
         }
         finalMessageText += "Kijk welke opdrachten het beste bij jouw combinatie passen en werk stap voor stap aan je ontwikkeling.";
       }
+
       document.getElementById('final-message').textContent = finalMessageText;
+
+      // ✅ Opslaan in localStorage
+      const resultData = {
+        labels: labels,
+        message: finalMessageText
+      };
+      localStorage.setItem('quizResult', JSON.stringify(resultData));
     }
 
     function animateTransition(newIndex, direction) {
@@ -443,6 +417,7 @@
     }
 
     function resetQuiz() {
+      localStorage.removeItem('quizResult');
       const inputs = document.querySelectorAll('input[type="radio"]');
       inputs.forEach(input => input.checked = false);
       screens[currentScreen].style.display = 'none';
@@ -471,15 +446,47 @@
       }
     });
 
-    updateNextButtonState();
-    updateNavButtons();
+    // ✅ Nieuw: check voor eerder opgeslagen resultaat
+    function checkStoredResult() {
+      const stored = localStorage.getItem('quizResult');
+      if (stored) {
+        const data = JSON.parse(stored);
+        const labelsContainer = document.getElementById('labels-container');
+        const resultTextElement = document.getElementById('result-text');
+        const finalMessage = document.getElementById('final-message');
+
+        labelsContainer.innerHTML = '';
+        data.labels.forEach(label => {
+          const span = document.createElement('span');
+          span.textContent = label;
+          span.style.backgroundColor = label.includes('expert') ? 'red' : label.includes('skilled') ? 'green' : 'blue';
+          span.style.color = 'white';
+          span.style.padding = '5px 10px';
+          span.style.marginRight = '5px';
+          span.style.borderRadius = '5px';
+          labelsContainer.appendChild(span);
+        });
+
+        resultTextElement.textContent = data.labels.length === 1
+          ? "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:"
+          : "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
+
+        finalMessage.textContent = data.message;
+
+        screens.forEach(s => s.style.display = 'none');
+        currentScreen = screens.length - 1;
+        screens[currentScreen].style.display = 'block';
+        startMatrix();
+        updateNavButtons();
+      }
+    }
 
     function startMatrix() {
       const canvas = document.getElementById("matrix");
       const ctx = canvas.getContext("2d");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      const words = ["print","python","pip","break","assert","del","elif","global","lambda","nonlocal","raise","except","yield","with","bool","await", "async","def", "str", "int", "for", "in", "continue", "False", "True", "or", "and", "not", "class", "input", "import", "from"];
+      const words = ["print","python","for","if","class","input","import","return"];
       const fontSize = 16;
       const columnWidth = 45;
       const columns = Math.floor(canvas.width / columnWidth);
@@ -489,7 +496,7 @@
         ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#0F0";
-        ctx.font = fontSize + "px arial";
+        ctx.font = fontSize + "px monospace";
         for (let i = 0; i < drops.length; i++) {
           const text = words[Math.floor(Math.random() * words.length)];
           ctx.fillText(text, i * columnWidth, drops[i] * fontSize);
@@ -501,6 +508,10 @@
       }
       setInterval(draw, 66);
     }
+
+    updateNextButtonState();
+    updateNavButtons();
+    checkStoredResult(); // ⬅️ Zorgt voor doorspringen bij herladen
   </script>
 </body>
 </html>
