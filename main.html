@@ -56,7 +56,7 @@
       margin-bottom: 20px;
       width: 100%;
     }
-    /* Het plaatje links met behoud van verhoudingen en nu met width 300px */
+    /* Het plaatje links met behoud van verhoudingen en vaste width */
     #header-image {
       width: 300px;
       height: auto;
@@ -71,18 +71,26 @@
       margin: 0;
       padding: 0;
     }
-    #difficulty {
-      font-size: 0.9em;
-      font-weight: bold;
-      color: white;
-      background-color: #28a745;
-      display: inline-block;
-      padding: 5px 15px;
-      border-radius: 5px;
+    /* Container voor de labels */
+    #difficulty-labels {
       margin-top: 10px;
     }
-    #assignment-description {
-      margin-top: 10px;
+    .label {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: #fff;
+      margin-right: 10px;
+      font-size: 0.9em;
+    }
+    .label.expert {
+      background-color: red;
+    }
+    .label.skilled {
+      background-color: blue;
+    }
+    .label.aspiring {
+      background-color: green;
     }
     /* Responsive: bij smalle schermen zet plaatje boven de tekst */
     @media (max-width: 600px) {
@@ -310,7 +318,11 @@
       <img id="header-image" src="https://cdn.nos.nl/image/2020/12/23/701694/2560x1440a.jpg" alt="Header Afbeelding"/>
       <div id="header-text">
         <h1 id="page-title"></h1>
-        <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
+        <div id="difficulty-labels">
+          <span class="label expert" id="labelExpert">Expert developer</span>
+          <span class="label skilled" id="labelSkilled">Skilled developer</span>
+          <span class="label aspiring" id="labelAspiring">Aspiring developer</span>
+        </div>
         <p id="assignment-description"></p>
       </div>
     </div>
@@ -387,17 +399,22 @@
   
   <script>
     // Globale constante voor de submission URL
-    const SUBMISSION_URL = "https://app.codegra.de/";
+    const SUBMISSION_URL = "https://voorbeeldwebsite.com/leverin";
     
+    // Globale booleans voor de labels
+    let showExpert = false;
+    let showSkilled = true;
+    let showAspiring = true;
+    
+
     const pageTitle = "Forensische ICT Opdracht";
     const opdrachtBeschrijving = `
-    Je hebt een geheime boodschap die je veilig naar het Openbaar Ministerie wilt sturen. Om te voorkomen dat iemand jouw informatie onderschept, besluit je de Caesar-codering te gebruiken. Dit versleutelt je bericht door elke ASCII-waarde van de tekens met een bepaalde sleutel te verhogen.
-
-    Schrijf een Python-programma dat de gebruiker om een string en een sleutel vraagt(de sleutel moet een getal zijn!) en vervolgens de versleutelde boodschap genereert.
+Je wilt een stukje geheime informatie naar het openbaar ministerie sturen. 
+Je besluit dit te doen door je string te versleutelen met de Caesar versleuteling. 
+Door elke ASCII waarde van elke karakter met een getal (de sleutel) op te hogen.
+Maak een python programma die een string vraagt en een sleutel. Geef vervolgens de versleutelde string
     `;
-    document.title = pageTitle;
-    document.getElementById("page-title").innerText = pageTitle;
-    document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
+
     
     const applicatie_naam = "Opdracht1";
     const pythonCode = `
@@ -408,6 +425,19 @@
         cipher += chr(ord(i) + sleutel)
     print(f"De versleuteling van {woordje} is {cipher}")
     `;
+
+    // Functie om de zichtbaarheid van de labels te updaten
+    function updateLabels() {
+      document.getElementById("labelExpert").style.display = showExpert ? "inline-block" : "none";
+      document.getElementById("labelSkilled").style.display = showSkilled ? "inline-block" : "none";
+      document.getElementById("labelAspiring").style.display = showAspiring ? "inline-block" : "none";
+    }
+    
+
+    document.title = pageTitle;
+    document.getElementById("page-title").innerText = pageTitle;
+    document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
+
     let inputResolver, pyodide;
   
     const terminal = document.getElementById("terminal");
@@ -502,7 +532,7 @@
       document.getElementById("submissionModal").style.display = "none";
     }
   
-    if (localStorage.getItem("darkMode") === "true") {
+    if (sessionStorage.getItem("darkMode") === "true") {
       document.body.classList.add("dark-mode");
     } else {
       document.body.classList.remove("dark-mode");
@@ -512,13 +542,19 @@
       loadPyodideAndSetup().then(() => {
         loader.style.display = "none";
         mainContainer.style.display = "block";
+        // Update de labels bij laden
+        updateLabels();
       });
     };
   
     darkModeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
-      localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+      sessionStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
     });
+  
+    // Voorbeeld: hier kun je de booleans aanpassen (bijv. via console of een extra knop)
+    // showExpert = false; // Expert label verbergen
+    // updateLabels();
   </script>
 </body>
 </html>
