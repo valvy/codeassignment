@@ -391,10 +391,9 @@
     
     const pageTitle = "Forensische ICT Opdracht";
     const opdrachtBeschrijving = `
-Je wilt een stukje geheime informatie naar het openbaar ministerie sturen. 
-Je besluit dit te doen door je string te versleutelen met de Caesar versleuteling. 
-Door elke ASCII waarde van elke karakter met een getal (de sleutel) op te hogen.
-Maak een python programma die een string vraagt en een sleutel. Geef vervolgens de versleutelde string
+    Je hebt een geheime boodschap die je veilig naar het Openbaar Ministerie wilt sturen. Om te voorkomen dat iemand jouw informatie onderschept, besluit je de Caesar-codering te gebruiken. Dit versleutelt je bericht door elke ASCII-waarde van de tekens met een bepaalde sleutel te verhogen.
+
+    Schrijf een Python-programma dat de gebruiker om een string en een sleutel vraagt(de sleutel moet een getal zijn!) en vervolgens de versleutelde boodschap genereert.
     `;
     document.title = pageTitle;
     document.getElementById("page-title").innerText = pageTitle;
@@ -503,7 +502,7 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
       document.getElementById("submissionModal").style.display = "none";
     }
   
-    if (sessionStorage.getItem("darkMode") === "true") {
+    if (localStorage.getItem("darkMode") === "true") {
       document.body.classList.add("dark-mode");
     } else {
       document.body.classList.remove("dark-mode");
@@ -518,7 +517,7 @@ Maak een python programma die een string vraagt en een sleutel. Geef vervolgens 
   
     darkModeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
-      sessionStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+      localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
     });
   </script>
 </body>
