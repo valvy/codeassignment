@@ -120,18 +120,20 @@
       z-index: 0;
       background-color: #000;
     }
-    /* Eindcontainer: gecentreerd in het midden met vaste afmetingen (ongeveer 25% van het scherm) en solide achtergrond */
+    /* Eindcontainer: gecentreerd in het midden, neemt 80% van de viewport in */
     .final-content {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 25vw;
+      width: 80vw;
+      height: 80vh;
       padding: 20px;
-      background-color: #000; /* Solide achtergrondkleur */
+      background-color: #000;
       text-align: center;
       z-index: 1;
       font-size: 1.3em;
+      overflow-y: auto;
     }
     /* Navigatieknoppen */
     .nav-buttons {
@@ -283,8 +285,12 @@
     finalScreen.innerHTML = `
       <canvas id="matrix"></canvas>
       <div class="final-content">
-        <h2>Eindscore</h2>
-        <p id="score-display">Je score is: 0</p>
+        <h2>Aanbeveling</h2>
+        <p id="result-text">Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:</p>
+        <!-- Labels worden hier toegevoegd -->
+        <div id="labels-container"></div>
+        <!-- Eindboodschap -->
+        <p id="final-message">pizza</p>
       </div>
     `;
     quizContainer.appendChild(finalScreen);
@@ -322,7 +328,53 @@
           totalScore += parseInt(selected.value, 10);
         }
       }
-      document.getElementById('score-display').textContent = `Je score is: ${totalScore}`;
+      
+      // Maak een lege container voor de labels
+      const labelsContainer = document.getElementById('labels-container');
+      labelsContainer.innerHTML = ''; // reset vorige labels
+
+      // Voeg labels toe op basis van score
+      if (totalScore > 5) {
+        const expertLabel = document.createElement('span');
+        expertLabel.textContent = 'expert developer';
+        // Expert label krijgt nu een rode achtergrond
+        expertLabel.style.backgroundColor = 'red';
+        expertLabel.style.color = 'white';
+        expertLabel.style.padding = '5px 10px';
+        expertLabel.style.marginRight = '5px';
+        expertLabel.style.borderRadius = '5px';
+        labelsContainer.appendChild(expertLabel);
+      }
+
+      if (totalScore >= 3 && totalScore <= 6) {
+        const skilledLabel = document.createElement('span');
+        skilledLabel.textContent = 'skilled developer';
+        skilledLabel.style.backgroundColor = 'green';
+        skilledLabel.style.color = 'white';
+        skilledLabel.style.padding = '5px 10px';
+        skilledLabel.style.marginRight = '5px';
+        skilledLabel.style.borderRadius = '5px';
+        labelsContainer.appendChild(skilledLabel);
+      }
+
+      if (totalScore >= -100 && totalScore <= 4) {
+        const aspiringLabel = document.createElement('span');
+        aspiringLabel.textContent = 'aspiring developer';
+        aspiringLabel.style.backgroundColor = 'blue';
+        aspiringLabel.style.color = 'white';
+        aspiringLabel.style.padding = '5px 10px';
+        aspiringLabel.style.marginRight = '5px';
+        aspiringLabel.style.borderRadius = '5px';
+        labelsContainer.appendChild(aspiringLabel);
+      }
+
+      // Pas de tekst aan op basis van het aantal labels
+      const resultTextElement = document.getElementById('result-text');
+      if (labelsContainer.childNodes.length === 1) {
+        resultTextElement.textContent = "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:";
+      } else {
+        resultTextElement.textContent = "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
+      }
     }
 
     function animateTransition(newIndex, direction) {
@@ -353,7 +405,7 @@
       currentScreen = newIndex;
       if (currentScreen === screens.length - 1) {
         updateScore();
-        startMatrix(); // Start de Matrix-animatie op het eindscherm.
+        startMatrix(); // Start Matrix-animatie op het eindscherm.
       }
       updateNextButtonState();
       updateNavButtons();
@@ -384,11 +436,11 @@
       const ctx = canvas.getContext("2d");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      const lettersArr = letters.split("");
+      const words = ["print","python","pip","break","assert","del","elif","global","lambda","nonlocal","raise","except","yield","with","bool","await", "async","def", "str", "int", "for", "in", "continue", "False", "True", "or", "and", "not", "class", "input", "import", "from"];
       const fontSize = 16;
-      const columns = canvas.width / fontSize;
-      const drops = Array.from({ length: columns }, () => 1);
+      const columnWidth = 45;
+      const columns = Math.floor(canvas.width / columnWidth);
+      const drops = Array.from({ length: columns }, () => Math.floor(Math.random() * canvas.height / fontSize));
 
       function draw() {
         ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
@@ -396,15 +448,15 @@
         ctx.fillStyle = "#0F0";
         ctx.font = fontSize + "px arial";
         for (let i = 0; i < drops.length; i++) {
-          const text = lettersArr[Math.floor(Math.random() * lettersArr.length)];
-          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+          const text = words[Math.floor(Math.random() * words.length)];
+          ctx.fillText(text, i * columnWidth, drops[i] * fontSize);
           if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
             drops[i] = 0;
           }
           drops[i]++;
         }
       }
-      setInterval(draw, 33);
+      setInterval(draw, 66);
     }
   </script>
 </body>
