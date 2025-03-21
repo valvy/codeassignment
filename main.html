@@ -89,7 +89,7 @@
       background-color: #f5f5f5;
       border: 1px solid #ccc;
       padding: 3px 0;
-      margin-bottom: 1px;  /* Afstand verlaagd naar 1px */
+      margin-bottom: 1px;
       width: 100%;
       display: flex;
       align-items: center;
@@ -125,7 +125,7 @@
     #terminal {
       width: 100%;
       height: 200px;
-      background: #121212; /* Standaard in light mode */
+      background: #121212;
       color: #00ff00;
       padding: 10px;
       border-radius: 5px;
@@ -133,7 +133,7 @@
       white-space: pre-wrap;
       font-family: 'Courier New', Courier, monospace;
       display: none;
-      margin-top: 1px; /* Afstand verlaagd naar 1px */
+      margin-top: 1px;
       position: relative;
     }
     /* In dark mode krijgt de terminal een lichtere achtergrond maar blijft donker */
@@ -162,7 +162,12 @@
     body.dark-mode button.normal {
       background-color: #555;
     }
+    /* Dark mode toggle: fixed rechtsboven */
     #darkModeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1001;
       background: none;
       border: none;
       cursor: pointer;
@@ -219,25 +224,29 @@
       <div id="header-text">
         <h1 id="page-title"></h1>
         <span id="difficulty">Moeilijkheid: Aspiring Developer</span>
+        <br/>
+        <br/>
+        <img height="200" src="https://cdn.nos.nl/image/2020/12/23/701694/2560x1440a.jpg"/>
         <p id="assignment-description"></p>
       </div>
-      <button id="darkModeToggle" title="Toggle Dark Mode">
-        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <title>dark-mode-solid</title>
-          <g id="Layer_2" data-name="Layer 2">
-            <g id="Icons">
+    </div>
+    <!-- Dark mode toggle staat nu fixed rechtsboven -->
+    <button id="darkModeToggle" title="Toggle Dark Mode">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <title>dark-mode-solid</title>
+        <g id="Layer_2" data-name="Layer 2">
+          <g id="Icons">
+            <g>
+              <rect width="48" height="48" fill="none"/>
               <g>
-                <rect width="48" height="48" fill="none"/>
-                <g>
-                  <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
-                  <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
-                </g>
+                <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
+                <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
               </g>
             </g>
           </g>
-        </svg>
-      </button>
-    </div>
+        </g>
+      </svg>
+    </button>
     <div id="button-container">
       <button class="normal" onclick="toggleTerminal()" title="Toon of verberg de terminal">Ervaar hoe de applicatie moet werken</button>
     </div>
@@ -280,27 +289,36 @@
   
   <!-- Input Modal -->
   <div id="inputModal">
-    <p>Voer een waarde in:</p>
+    <p id="msg">Voer een waarde in:</p>
     <input type="text" id="userInput">
     <button class="normal" onclick="submitInput()">OK</button>
   </div>
   
   <script>
     const pageTitle = "Forensische ICT Opdracht";
-    const opdrachtBeschrijving = "Los de volgende programmeeropdracht op met de gegeven terminal.";
+    const opdrachtBeschrijving = `
+Je wilt een stukje geheime informatie naar het openbaar ministerie sturen. 
+    Je besluit dit te doen door je string te versleutelen met de Caesar versleuteling. 
+    Door elke ASCII waarde van elke karakter met een getal (de sleutel) op te hogen.
+    Maak een python programma die een string vraagt en een sleutel. Geef vervolgens de versleutelde string
+    `;
     document.title = pageTitle;
     document.getElementById("page-title").innerText = pageTitle;
     document.getElementById("assignment-description").innerText = opdrachtBeschrijving;
     
     const applicatie_naam = "Opdracht1";
     const pythonCode = `
-        x = int(input('test '))
-        for i in range(x):
-            print(i)
-        `;
+    woordje = input("Welk woordje wil je versleutelen? ")
+    sleutel = int(input("Welke sleutel wil je gebruiken? "))
+    cipher = ""
+    for i in woordje:
+        cipher += chr(ord(i) + sleutel)
+    print(f"De versleuteling van {woordje} is {cipher}")
+    `;
     let inputResolver, pyodide;
   
     const terminal = document.getElementById("terminal");
+    const msg_modal = document.getElementById("msg");
     const inputModal = document.getElementById("inputModal");
     const userInput = document.getElementById("userInput");
     const runButton = document.getElementById("runButton");
@@ -311,7 +329,7 @@
     const loader = document.getElementById("loader");
   
     function preprocess_code(code) {
-      return code.replace('input(', 'await input(');
+      return code.replace('input(', ' await input(').replace('(input(', ' (await input(');
     }
   
     function clearTerminal() {
@@ -342,6 +360,7 @@
   
     function getInputFromUser(promptText) {
       terminal.innerHTML += `> ${promptText}`;
+      msg_modal.innerHTML = promptText;
       return new Promise((resolve) => {
         inputModal.style.display = "block";
         inputResolver = resolve;
@@ -383,11 +402,10 @@
     }
     if (sessionStorage.getItem("darkMode") === "true") {
         document.body.classList.add("dark-mode");
-      } else {
+    } else {
         document.body.classList.remove("dark-mode");
     }
     window.onload = () => {
-
       loadPyodideAndSetup().then(() => {
         loader.style.display = "none";
         mainContainer.style.display = "block";
