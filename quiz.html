@@ -2,516 +2,235 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Interactieve Quiz met Matrix-animatie</title>
+  <title>Studietaak 4 Toestand en repetitie in code</title>
+  <!-- Google Fonts: Roboto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
-    /* Donker hacker-thema */
-    body {
+    /* Zorg dat de pagina geen scrollbalken toont (op grotere schermen) */
+    html, body {
       margin: 0;
-      font-family: 'Courier New', Courier, monospace;
-      background-color: #111;
-      color: #e0e0e0;
-      overflow: hidden;
-      font-size: 18px;
-    }
-    .quiz-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
-    /* Algemene schermstijl met overgang voor transform */
-    .screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
+      padding: 0;
       height: 100%;
-      transition: transform 0.5s ease;
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
     }
-    /* Flex-container voor vraag/opties en media (50/50) */
-    .content-wrapper {
+
+    /* Container vult het hele scherm */
+    .container {
       display: flex;
       width: 100%;
-      height: 100%;
+      height: 100vh;
     }
-    /* Linker helft: vraag-container met inhoud op ongeveer 25% vanaf de bovenkant */
-    .question-container {
+
+    /* Linkerkolom voor beschrijving en leerdoelen */
+    .info {
       width: 50%;
-      padding: 20px;
       box-sizing: border-box;
-      padding-top: 25vh;
-    }
-    .question-container h2,
-    .question-container p,
-    .options-container,
-    .option label {
-      animation: fadeIn 0.5s ease-in;
-      font-size: 1.2em;
-    }
-    /* Rechter helft: media-container met gecentreerde inhoud */
-    .media-container {
-      width: 50%;
       padding: 20px;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    /* Afbeeldingen: standaard volledig de schermhoogte met object-fit: cover */
-    .media-container img {
-      height: 100vh;
-      width: auto;
-      object-fit: cover;
-      display: block;
-      margin: 0 auto;
-    }
-    /* Voor afbeeldingen die niet bijgesneden mogen worden */
-    .media-container.no-crop img {
-      height: auto;
-      max-height: 100vh;
-      width: auto;
-      object-fit: contain;
-    }
-    /* Voor het laatste scherm: maak de afbeelding extra klein (20% van de schermhoogte) */
-    .media-container.no-crop.last img {
-      max-height: 20vh;
-    }
-    /* Video-container voor YouTube-filmpjes met 16:9 aspectratio */
+
+    /* Rechterkolom voor de video */
     .video-container {
+      width: 50%;
       position: relative;
-      width: 100%;
-      height: 0;
-      padding-bottom: 56.25%; /* 16:9 ratio */
-      overflow: hidden;
+      padding-top: 60px;  /* Reserveer ruimte voor de toggle knoppen */
+      box-sizing: border-box;
+      height: 100%;
     }
+
+    /* De iframe start 60px vanaf de top en vult de rest */
     .video-container iframe {
       position: absolute;
-      top: 0;
+      top: 60px;
       left: 0;
       width: 100%;
-      height: 100%;
+      height: calc(100% - 60px);
       border: 0;
-    }
-    .options-container {
-      margin-top: 20px;
-    }
-    .option {
-      margin-bottom: 10px;
-    }
-    /* Eindscherm styling met Matrix-animatie */
-    .final-screen {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-    /* Canvas vult de hele achtergrond */
-    #matrix {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      background-color: #000;
-    }
-    /* Eindcontainer: gecentreerd in het midden, neemt 80% van de viewport in */
-    .final-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80vw;
-      height: 80vh;
-      padding: 20px;
-      background-color: #000;
-      text-align: center;
       z-index: 1;
-      font-size: 1.3em;
-      overflow-y: auto;
     }
-    /* Navigatieknoppen */
-    .nav-buttons {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      text-align: center;
-      z-index: 2;
-    }
-    .nav-buttons button {
-      background-color: #333;
-      color: #e0e0e0;
-      border: none;
-      padding: 10px 20px;
-      margin: 0 10px;
-      cursor: pointer;
-      font-size: 18px;
-      transition: background-color 0.3s;
-    }
-    .nav-buttons button:hover:not(:disabled) {
-      background-color: #555;
-    }
-    .nav-buttons button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-</style>
-</head>
-<body>
-  <div class="quiz-container" id="quiz-container">
-    <!-- Schermen worden dynamisch opgebouwd -->
-  </div>
 
-  <div class="nav-buttons">
-    <button id="prevBtn">Vorige</button>
-    <button id="nextBtn" disabled>Volgende</button>
+    h1 {
+      font-size: 1.5em;
+      margin: 0 0 0.5em 0;
+    }
+    h2 {
+      font-size: 1.2em;
+      margin: 1em 0 0.5em 0;
+    }
+    p {
+      margin-bottom: 1em;
+    }
+    ol, ul {
+      margin-bottom: 1em;
+      padding-left: 1.5em;
+    }
+
+    /* Darkmode toggle knop, rechtsboven */
+    #darkModeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #darkModeToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Fullscreen toggle knop, rechtsboven naast de darkmode knop */
+    #fullscreenToggle {
+      position: fixed;
+      top: 20px;
+      right: 60px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #fullscreenToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Light-mode styling */
+    body.light-mode {
+      background-color: #fff;
+      color: #000;
+    }
+    body.light-mode #darkModeToggle,
+    body.light-mode #fullscreenToggle {
+      background: rgba(255, 255, 255, 0.8);
+    }
+    body.light-mode #darkModeToggle svg,
+    body.light-mode #fullscreenToggle svg {
+      fill: #000;
+    }
+    /* Dark mode standaard */
+    body.dark-mode {
+      background-color: #111;
+      color: #e0e0e0;
+    }
+  </style>
+</head>
+<body class="dark-mode">
+  <!-- Darkmode toggle knop -->
+  <button id="darkModeToggle" title="Toggle Dark Mode">
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <title>Toggle Dark Mode</title>
+      <g id="Layer_2" data-name="Layer 2">
+        <g id="Icons">
+          <g>
+            <rect width="48" height="48" fill="none"/>
+            <g>
+              <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
+              <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </button>
+  
+  <!-- Fullscreen toggle knop -->
+  <button id="fullscreenToggle" title="Toggle Fullscreen">
+    <svg viewBox="0 0 24 24">
+      <title>Toggle Fullscreen</title>
+      <path d="M7 14H5v5h5v-2H7zm0-9h5V3H7c-1.1 0-2 .9-2 2v5h2V5zm10 0v2h3v3h2V5c0-1.1-.9-2-2-2h-5v2h5zm-2 9h3v3h2v5c0 1.1-.9 2-2 2h-5v-2h5z"/>
+    </svg>
+  </button>
+
+  <div class="container">
+    <!-- Linkerkolom: beschrijving + leerdoelen -->
+    <div class="info">
+      <h1>Studietaak 4 Toestand en repetitie in code</h1>
+      <div class="beschrijving">
+        <p>
+          Deze studietaak is speciaal gemaakt voor studenten die forensische ICT volgen en net beginnen met programmeren.
+          Je leert hoe je herhalende taken kunt automatiseren, bijvoorbeeld het meerdere keren uitvoeren van dezelfde opdracht 
+          of het doorlopen van een verzameling gegevens.
+        </p>
+        <p>
+          Door eenvoudige voorbeelden ontdek je hoe je met lussen (zoals een <em>for-lus</em> of <em>while-lus</em>) 
+          overzichtelijke en herbruikbare code kunt schrijven. Deze kennis helpt bij het analyseren van digitale sporen 
+          en het verwerken van data in een forensische context.
+        </p>
+      </div>
+      <h2>Leerdoelen</h2>
+      <ol>
+        <li>Ik kan uitleggen wat repetitie is in code en waarom dit nodig is.</li>
+        <li>Ik kan uitleggen wat een lijstdatatype is en waarom dit nodig is.</li>
+        <li>Ik ben in staat om een probleem met iteraties kleiner te maken.</li>
+        <li>Ik ben in staat om gestructureerd een probleem met iteraties te analyseren.</li>
+        <li>Ik kan in code het lijstdatatype gebruiken.</li>
+        <li>Ik kan lussen in code gebruiken, waaronder:
+          <ul>
+            <li>while-lus</li>
+            <li>for-lus</li>
+            <li>break</li>
+            <li>continue</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Rechterkolom: video -->
+    <div class="video-container">
+      <iframe 
+        src="https://share.synthesia.io/6adb1087-b029-48b2-aca3-e403b147a237"
+        scrolling="no"
+        allowfullscreen>
+      </iframe>
+    </div>
   </div>
 
   <script>
-    class Scherm {
-      constructor(vraag, mediaHTML, opties, crop = true) {
-        this.vraag = vraag;
-        this.mediaHTML = mediaHTML;
-        this.opties = opties;
-        this.crop = crop;
-      }
+    // Bij het laden: Haal de darkmode-voorkeur op uit localStorage en pas de juiste modus toe.
+    if (localStorage.getItem("darkMode") === "true") {
+      document.body.classList.add("dark-mode");
+      document.body.classList.remove("light-mode");
+    } else if (localStorage.getItem("darkMode") === "false") {
+      document.body.classList.add("light-mode");
+      document.body.classList.remove("dark-mode");
     }
-
-    const vraagSchermen = [
-      new Scherm(
-        "Hoe moeilijk vond je de vorige studietaken van probleem oplossend programmeren?",
-        `<img src="https://www.metronieuws.nl/wp-content/uploads/2019/05/3de9ad0635a374f1914f1af1c7c37843.jpg" alt="Afbeelding 1">`,
-        [
-          { text: "Makkelijk", value: 2 },
-          { text: "Niet makkelijk/moeilijk", value: 1 },
-          { text: "Moeilijk", value: 0 }
-        ]
-      ),
-      new Scherm(
-        "Heb je voor de vorige opdrachten veel gebruik moeten maken van LLM's zoals chatGPT?",
-        `<div class="video-container">
-           <iframe src="https://www.youtube.com/embed/BBaJttSjAHk" allowfullscreen></iframe>
-         </div>`,
-        [
-          { text: "Veel", value: -2 },
-          { text: "Af en toe", value: 0 },
-          { text: "weinig", value: 1 }
-        ]
-      ),
-      new Scherm(
-        "Heb je al eerder met lussen (zoals for-loops, while) gewerkt op een eerdere opleiding?",
-        `<img src="https://www.lotus-qa.com/wp-content/uploads/2020/02/testing.jpg" alt="Afbeelding 3">`,
-        [
-          { text: "nee,", value: 0 },
-          { text: "een beetje", value: 1 },
-          { text: "Ik kan lussen al gebruiken", value: 2 }
-        ]
-      ),
-      new Scherm(
-        "Begrijp je de volgende code zonder gebruik te maken van een LLM (zoals chatgpt)?",
-        `<img src="https://allinpython.com/wp-content/uploads/2022/07/for-loop-syntax-1024x409.png" alt="For loop syntax">`,
-        [
-          { text: "Nee,", value: 0 },
-          { text: "Een beetje", value: 1 },
-          { text: "Ja", value: 2 }
-        ],
-        false
-      )
-    ];
-
-    const quizContainer = document.getElementById('quiz-container');
-
-    vraagSchermen.forEach((scherm, index) => {
-      const div = document.createElement('div');
-      div.classList.add('screen');
-      div.style.display = index === 0 ? 'block' : 'none';
-      div.style.transform = index === 0 ? 'translateX(0)' : '';
-
-      let optiesHTML = `<div class="options-container">`;
-      scherm.opties.forEach(optie => {
-        optiesHTML += `
-          <div class="option">
-            <input type="radio" id="q${index}-option${optie.value}" name="question${index}" value="${optie.value}">
-            <label for="q${index}-option${optie.value}">${optie.text}</label>
-          </div>`;
-      });
-      optiesHTML += `</div>`;
-
-      const mediaClass = scherm.crop
-        ? 'media-container'
-        : 'media-container no-crop' + (index === vraagSchermen.length - 1 ? ' last' : '');
-
-      div.innerHTML = `
-        <div class="content-wrapper">
-          <div class="question-container">
-            <h2>Vraag ${index + 1}</h2>
-            <p>${scherm.vraag}</p>
-            ${optiesHTML}
-          </div>
-          <div class="${mediaClass}">
-            ${scherm.mediaHTML}
-          </div>
-        </div>`;
-      quizContainer.appendChild(div);
-    });
-
-    // Eindscherm
-    const finalScreen = document.createElement('div');
-    finalScreen.classList.add('screen', 'final-screen');
-    finalScreen.style.display = 'none';
-    finalScreen.innerHTML = `
-      <canvas id="matrix"></canvas>
-      <div class="final-content">
-        <h2>Aanbeveling</h2>
-        <p id="result-text">Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:</p>
-        <div id="labels-container"></div>
-        <p id="final-message"></p>
-      </div>`;
-    quizContainer.appendChild(finalScreen);
-
-    const screens = document.querySelectorAll('.screen');
-    let currentScreen = 0;
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
-
-    function updateNavButtons() {
-      if (currentScreen === 0) {
-        prevBtn.style.display = 'none';
+    // Voeg een event listener toe aan de darkmode-toggle knop.
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', () => {
+      if (document.body.classList.contains("dark-mode")) {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+        localStorage.setItem("darkMode", "false");
       } else {
-        prevBtn.style.display = 'inline-block';
+        document.body.classList.remove("light-mode");
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("darkMode", "true");
       }
-      if (currentScreen === screens.length - 1) {
-        prevBtn.textContent = "maak de quiz opnieuw";
-        prevBtn.style.backgroundColor = 'red';
-        nextBtn.style.display = 'none';
+    });
+
+    // Voeg een event listener toe aan de fullscreen-toggle knop.
+    const fullscreenToggle = document.getElementById('fullscreenToggle');
+    fullscreenToggle.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
       } else {
-        prevBtn.textContent = "Vorige";
-        prevBtn.style.backgroundColor = '#333';
-        nextBtn.style.display = 'inline-block';
-      }
-    }
-
-    function updateNextButtonState() {
-      if (currentScreen >= vraagSchermen.length) {
-        nextBtn.disabled = true;
-        return;
-      }
-      const selected = document.querySelector(`input[name="question${currentScreen}"]:checked`);
-      nextBtn.disabled = !selected;
-    }
-
-    document.addEventListener('change', (e) => {
-      if (e.target.matches('input[type="radio"]')) {
-        updateNextButtonState();
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
       }
     });
-
-    function updateScore() {
-      let totalScore = 0;
-      for (let i = 0; i < vraagSchermen.length; i++) {
-        const selected = document.querySelector(`input[name="question${i}"]:checked`);
-        if (selected) {
-          totalScore += parseInt(selected.value, 10);
-        }
-      }
-
-      const labelsContainer = document.getElementById('labels-container');
-      labelsContainer.innerHTML = '';
-
-      let hasExpert = false, hasSkilled = false, hasAspiring = false;
-      if (totalScore > 5) hasExpert = true;
-      if (totalScore >= 3 && totalScore <= 6) hasSkilled = true;
-      if (totalScore >= -100 && totalScore <= 4) hasAspiring = true;
-
-      const labels = [];
-      if (hasExpert) {
-        labels.push('expert developer');
-        labelsContainer.innerHTML += `<span style="background:red;color:white;padding:5px 10px;margin-right:5px;border-radius:5px;">expert developer</span>`;
-      }
-      if (hasSkilled) {
-        labels.push('skilled developer');
-        labelsContainer.innerHTML += `<span style="background:green;color:white;padding:5px 10px;margin-right:5px;border-radius:5px;">skilled developer</span>`;
-      }
-      if (hasAspiring) {
-        labels.push('aspiring developer');
-        labelsContainer.innerHTML += `<span style="background:blue;color:white;padding:5px 10px;margin-right:5px;border-radius:5px;">aspiring developer</span>`;
-      }
-
-      const resultTextElement = document.getElementById('result-text');
-      resultTextElement.textContent = labels.length === 1
-        ? "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:"
-        : "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
-
-        let finalMessageText = "";
-      if (hasAspiring && !hasSkilled && !hasExpert) {
-        finalMessageText = "Aangezien je profiel de kenmerken van een aspiring developer toont, wordt aanbevolen om de aspiring developer opdrachten te maken. Deze opdrachten zijn uitdagend maar speciaal bedoeld voor beginnende programmeurs. Expert developer opdrachten wordt afgeraden.";
-      } else if (hasSkilled && !hasAspiring && !hasExpert) {
-        finalMessageText = "Je resultaat duidt op vaardigheden die passen bij een skilled developer. Je kunt beginnen met de opdrachten voor een skilled developer. Je mag eventueel de expert developer opdrachten bekijken, maar investeer hier niet te veel tijd in.";
-      } else if (hasExpert && !hasSkilled && !hasAspiring) {
-        finalMessageText = "Je profiel laat zien dat je een expert developer bent. We adviseren je daarom om uitsluitend de meest uitdagende, expert-level opdrachten te doen.";
-      } else if (hasSkilled && hasExpert && !hasAspiring) {
-        // Nu de nuance voor een combinatie van skilled en expert
-        finalMessageText = "Je resultaat toont zowel de solide basis van een skilled developer als de complexiteit van een expert developer. Begin met de opdrachten voor skilled developers om je fundament te versterken, en als je merkt dat je deze beheerst, kun je geleidelijk de meest uitdagende expert-level opdrachten oppakken. Zorg dat je de basis eerst goed op orde hebt voordat je overgaat op de hoogste uitdagingen.";
-      } else {
-        // Voor andere combinaties met meerdere aspecten, inclusief aspirant
-        finalMessageText = "Je resultaat toont een genuanceerd profiel met meerdere aspecten. ";
-        if (hasAspiring) {
-          finalMessageText += "De aspiring developer opdrachten bieden een goede basis voor beginnende programmeurs, ";
-        }
-        if (hasSkilled) {
-          finalMessageText += "terwijl de skilled developer opdrachten je vaardigheden verder ontwikkelen. ";
-        }
-        if (hasExpert) {
-          finalMessageText += "Expert developer opdrachten zijn zeer uitdagend; doe deze alleen als je zeker bent van je vaardigheden. ";
-        }
-        finalMessageText += "Kijk welke opdrachten het beste bij jouw combinatie passen en werk stap voor stap aan je ontwikkeling.";
-      }
-
-      document.getElementById('final-message').textContent = finalMessageText;
-
-      // ✅ Opslaan in localStorage
-      const resultData = {
-        labels: labels,
-        message: finalMessageText
-      };
-      localStorage.setItem('quizResult', JSON.stringify(resultData));
-    }
-
-    function animateTransition(newIndex, direction) {
-      const current = screens[currentScreen];
-      const target = screens[newIndex];
-      target.style.display = 'block';
-
-      if (direction === 'next') {
-        target.style.transform = 'translateX(100%)';
-        target.offsetWidth;
-        current.style.transform = 'translateX(-100%)';
-        target.style.transform = 'translateX(0)';
-      } else if (direction === 'prev') {
-        target.style.transform = 'translateX(-100%)';
-        target.offsetWidth;
-        current.style.transform = 'translateX(100%)';
-        target.style.transform = 'translateX(0)';
-      }
-
-      current.addEventListener('transitionend', function handler(event) {
-        if (event.propertyName !== 'transform') return;
-        current.style.display = 'none';
-        current.style.transform = '';
-        target.style.transform = '';
-        current.removeEventListener('transitionend', handler);
-      });
-
-      currentScreen = newIndex;
-      if (currentScreen === screens.length - 1) {
-        updateScore();
-        startMatrix();
-      }
-      updateNextButtonState();
-      updateNavButtons();
-    }
-
-    function resetQuiz() {
-      localStorage.removeItem('quizResult');
-      const inputs = document.querySelectorAll('input[type="radio"]');
-      inputs.forEach(input => input.checked = false);
-      screens[currentScreen].style.display = 'none';
-      currentScreen = 0;
-      screens[0].style.display = 'block';
-      screens[0].style.transform = 'translateX(0)';
-      updateNextButtonState();
-      updateNavButtons();
-    }
-
-    nextBtn.addEventListener('click', () => {
-      if (currentScreen < vraagSchermen.length) {
-        const selected = document.querySelector(`input[name="question${currentScreen}"]:checked`);
-        if (!selected) return;
-      }
-      if (currentScreen < screens.length - 1) {
-        animateTransition(currentScreen + 1, 'next');
-      }
-    });
-
-    prevBtn.addEventListener('click', () => {
-      if (currentScreen === screens.length - 1) {
-        resetQuiz();
-      } else if (currentScreen > 0) {
-        animateTransition(currentScreen - 1, 'prev');
-      }
-    });
-
-    // ✅ Nieuw: check voor eerder opgeslagen resultaat
-    function checkStoredResult() {
-      const stored = localStorage.getItem('quizResult');
-      if (stored) {
-        const data = JSON.parse(stored);
-        const labelsContainer = document.getElementById('labels-container');
-        const resultTextElement = document.getElementById('result-text');
-        const finalMessage = document.getElementById('final-message');
-
-        labelsContainer.innerHTML = '';
-        data.labels.forEach(label => {
-          const span = document.createElement('span');
-          span.textContent = label;
-          span.style.backgroundColor = label.includes('expert') ? 'red' : label.includes('skilled') ? 'green' : 'blue';
-          span.style.color = 'white';
-          span.style.padding = '5px 10px';
-          span.style.marginRight = '5px';
-          span.style.borderRadius = '5px';
-          labelsContainer.appendChild(span);
-        });
-
-        resultTextElement.textContent = data.labels.length === 1
-          ? "Uit de test blijkt dat de opdrachten met de volgende label het best bij je past:"
-          : "Uit de test blijkt dat de opdrachten met de volgende labels het best bij je passen:";
-
-        finalMessage.textContent = data.message;
-
-        screens.forEach(s => s.style.display = 'none');
-        currentScreen = screens.length - 1;
-        screens[currentScreen].style.display = 'block';
-        startMatrix();
-        updateNavButtons();
-      }
-    }
-
-    function startMatrix() {
-      const canvas = document.getElementById("matrix");
-      const ctx = canvas.getContext("2d");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const words = ["print","python","for","if","class","input","import","return"];
-      const fontSize = 16;
-      const columnWidth = 45;
-      const columns = Math.floor(canvas.width / columnWidth);
-      const drops = Array.from({ length: columns }, () => Math.floor(Math.random() * canvas.height / fontSize));
-
-      function draw() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#0F0";
-        ctx.font = fontSize + "px monospace";
-        for (let i = 0; i < drops.length; i++) {
-          const text = words[Math.floor(Math.random() * words.length)];
-          ctx.fillText(text, i * columnWidth, drops[i] * fontSize);
-          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-          }
-          drops[i]++;
-        }
-      }
-      setInterval(draw, 66);
-    }
-
-    updateNextButtonState();
-    updateNavButtons();
-    checkStoredResult(); // ⬅️ Zorgt voor doorspringen bij herladen
   </script>
 </body>
 </html>

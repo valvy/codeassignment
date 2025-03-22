@@ -13,9 +13,9 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden; /* Voorkom scrollen van de hele pagina */
+      overflow: hidden;
       font-family: 'Roboto', sans-serif;
-      font-size: 16px; /* Iets kleiner lettertype om kans op scroll te verkleinen */
+      font-size: 16px;
       line-height: 1.4;
     }
 
@@ -23,59 +23,136 @@
     .container {
       display: flex;
       width: 100%;
-      height: 100vh; /* 100% van het zichtbare scherm */
+      height: 100vh;
     }
 
-    /* Linkerhelft voor beschrijving en leerdoelen */
+    /* Linkerkolom voor beschrijving en leerdoelen */
     .info {
-      width: 50%; /* Neem de helft van de breedte in */
+      width: 50%;
       box-sizing: border-box;
       padding: 20px;
-      /* Als je écht zeker wilt zijn dat er geen scroll komt, zet je hieronder overflow: hidden;
-         Dan wordt tekst die niet past echter 'afgeknipt'.
-         overflow: auto zou wel scroll in deze kolom geven. */
-      overflow: hidden; 
+      overflow: hidden;
     }
 
-    /* Rechterhelft voor de video */
+    /* Rechterkolom voor de video */
     .video-container {
       width: 50%;
       position: relative;
-      /* We maken deze kolom ook 100% hoog zodat de iframe deze ruimte opvult */
+      padding-top: 60px;  /* Reserveer ruimte voor de toggle knoppen */
+      box-sizing: border-box;
       height: 100%;
     }
 
-    /* iframe vult de hele video-container (verhouding kan afwijken van 16:9) */
+    /* De iframe start 60px vanaf de top en vult de rest */
     .video-container iframe {
       position: absolute;
-      top: 0;
+      top: 60px;
       left: 0;
       width: 100%;
-      height: 100%;
+      height: calc(100% - 60px);
       border: 0;
+      z-index: 1;
     }
 
     h1 {
       font-size: 1.5em;
       margin: 0 0 0.5em 0;
     }
-
     h2 {
       font-size: 1.2em;
       margin: 1em 0 0.5em 0;
     }
-
     p {
       margin-bottom: 1em;
     }
-
     ol, ul {
       margin-bottom: 1em;
       padding-left: 1.5em;
     }
+
+    /* Darkmode toggle knop, rechtsboven */
+    #darkModeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #darkModeToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Fullscreen toggle knop, rechtsboven naast de darkmode knop */
+    #fullscreenToggle {
+      position: fixed;
+      top: 20px;
+      right: 60px;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.5);  /* Je kunt dit aanpassen, bijvoorbeeld naar een opvallende kleur */
+      border: none;
+      padding: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #fullscreenToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Light-mode styling */
+    body.light-mode {
+      background-color: #fff;
+      color: #000;
+    }
+    body.light-mode #darkModeToggle,
+    body.light-mode #fullscreenToggle {
+      background: rgba(255, 255, 255, 0.8);
+    }
+    body.light-mode #darkModeToggle svg,
+    body.light-mode #fullscreenToggle svg {
+      fill: #000;
+    }
+    /* Dark mode standaard */
+    body.dark-mode {
+      background-color: #111;
+      color: #e0e0e0;
+    }
   </style>
 </head>
-<body>
+<body class="dark-mode">
+  <!-- Darkmode toggle knop -->
+  <button id="darkModeToggle" title="Toggle Dark Mode">
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <title>Toggle Dark Mode</title>
+      <g id="Layer_2" data-name="Layer 2">
+        <g id="Icons">
+          <g>
+            <rect width="48" height="48" fill="none"/>
+            <g>
+              <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
+              <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </button>
+  
+  <!-- Fullscreen toggle knop -->
+  <button id="fullscreenToggle" title="Toggle Fullscreen">
+    <svg viewBox="0 0 24 24">
+      <title>Toggle Fullscreen</title>
+      <path d="M7 14H5v5h5v-2H7zm0-9h5V3H7c-1.1 0-2 .9-2 2v5h2V5zm10 0v2h3v3h2V5c0-1.1-.9-2-2-2h-5v2h5zm-2 9h3v3h2v5c0 1.1-.9 2-2 2h-5v-2h5z"/>
+    </svg>
+  </button>
+
   <div class="container">
     <!-- Linkerkolom: beschrijving + leerdoelen -->
     <div class="info">
@@ -119,5 +196,40 @@
       </iframe>
     </div>
   </div>
+
+  <script>
+    // Haal de darkmode-voorkeur op uit localStorage en pas de juiste modus toe.
+    if (localStorage.getItem("darkMode") === "true") {
+      document.body.classList.add("dark-mode");
+      document.body.classList.remove("light-mode");
+    } else if (localStorage.getItem("darkMode") === "false") {
+      document.body.classList.add("light-mode");
+      document.body.classList.remove("dark-mode");
+    }
+    // Voeg event listeners toe voor de toggle knoppen.
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', () => {
+      if (document.body.classList.contains("dark-mode")) {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+        localStorage.setItem("darkMode", "false");
+      } else {
+        document.body.classList.remove("light-mode");
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("darkMode", "true");
+      }
+    });
+
+    const fullscreenToggle = document.getElementById('fullscreenToggle');
+    fullscreenToggle.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
